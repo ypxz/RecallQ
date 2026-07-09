@@ -20,6 +20,15 @@ import com.recalldeck.app.ui.editor.CardEditorScreen
 import com.recalldeck.app.ui.editor.CardEditorViewModel
 import com.recalldeck.app.ui.home.HomeScreen
 import com.recalldeck.app.ui.home.HomeViewModel
+import com.recalldeck.app.data.repo.StudyScope
+import com.recalldeck.app.srs.CustomOrder
+import com.recalldeck.app.srs.QueueMode
+import com.recalldeck.app.srs.QueueOptions
+import com.recalldeck.app.ui.study.StudyConfig
+import com.recalldeck.app.ui.study.StudyScreen
+import com.recalldeck.app.ui.study.StudySetupScreen
+import com.recalldeck.app.ui.study.StudySetupViewModel
+import com.recalldeck.app.ui.study.StudyViewModel
 import com.recalldeck.app.ui.subject.SubjectDetailScreen
 import com.recalldeck.app.ui.subject.SubjectDetailViewModel
 
@@ -35,7 +44,8 @@ fun RecallDeckNavHost(navController: NavHostController) {
                 state = state,
                 onCreateSubject = viewModel::createSubject,
                 onSubjectClick = { navController.navigate(Destinations.subjectDetail(it)) },
-                onStudyAllDue = { navController.navigate(Destinations.STUDY) },
+                onStudyAllDue = { navController.navigate(Destinations.study()) },
+                onCustomStudy = { navController.navigate(Destinations.studySetup()) },
                 onStatsClick = { navController.navigate(Destinations.STATS) },
                 onImportClick = { navController.navigate(Destinations.IMPORT) },
                 onSettingsClick = { navController.navigate(Destinations.SETTINGS) },
@@ -58,6 +68,9 @@ fun RecallDeckNavHost(navController: NavHostController) {
                 },
                 onBrowseAll = {
                     navController.navigate(Destinations.cardBrowser(subjectId = subjectId))
+                },
+                onStudy = {
+                    navController.navigate(Destinations.studySetup(subjectId = subjectId))
                 },
             )
         }
@@ -104,6 +117,7 @@ fun RecallDeckNavHost(navController: NavHostController) {
             CardEditorScreen(
                 state = state,
                 onBack = { navController.popBackStack() },
+                onTypeChange = viewModel::setType,
                 onQuestionChange = viewModel::setQuestion,
                 onAnswerChange = viewModel::setAnswer,
                 onHintChange = viewModel::setHint,
@@ -112,8 +126,85 @@ fun RecallDeckNavHost(navController: NavHostController) {
                 onSave = viewModel::save,
             )
         }
-        composable(Destinations.STUDY_SETUP) { PlaceholderScreen("Study setup") }
-        composable(Destinations.STUDY) { PlaceholderScreen("Study") }
+        composable(
+            Destinations.STUDY_SETUP,
+            arguments = listOf(
+                navArgument("subjectId") { type = NavType.LongType; defaultValue = -1L },
+                navArgument("categoryId") { type = NavType.LongType; defaultValue = -1L },
+            ),
+        ) { entry ->
+            val subjectId = entry.arguments?.getLong("subjectId")?.orNullIfUnset()
+            val categoryId = entry.arguments?.getLong("categoryId")?.orNullIfUnset()
+            val viewModel: StudySetupViewModel = viewModel(
+                factory = StudySetupViewModel.factory(StudyScope(subjectId, categoryId)),
+            )
+            val state by viewModel.uiState.collectAsState()
+            StudySetupScreen(
+                state = state,
+                onBack = { navController.popBackStack() },
+                onModeChange = viewModel::setMode,
+                onCountChange = viewModel::setCount,
+                onOrderChange = viewModel::setOrder,
+                onCramChange = viewModel::setCram,
+                onTypeAnswerChange = viewModel::setTypeAnswer,
+                onStart = {
+                    val s = viewModel.uiState.value
+                    navController.navigate(
+                        Destinations.study(
+                            subjectId = subjectId,
+                            categoryId = categoryId,
+                            mode = s.mode.name,
+                            count = s.count.toIntOrNull() ?: 20,
+                            order = s.order.name,
+                            cram = s.cram,
+                            typeAnswer = s.typeAnswer,
+                        ),
+                    )
+                },
+            )
+        }
+        composable(
+            Destinations.STUDY,
+            arguments = listOf(
+                navArgument("subjectId") { type = NavType.LongType; defaultValue = -1L },
+                navArgument("categoryId") { type = NavType.LongType; defaultValue = -1L },
+                navArgument("mode") { type = NavType.StringType; defaultValue = "DUE" },
+                navArgument("count") { type = NavType.IntType; defaultValue = 20 },
+                navArgument("order") { type = NavType.StringType; defaultValue = "RANDOM" },
+                navArgument("cram") { type = NavType.BoolType; defaultValue = false },
+                navArgument("typeAnswer") { type = NavType.BoolType; defaultValue = false },
+            ),
+        ) { entry ->
+            val args = entry.arguments
+            val mode = QueueMode.valueOf(args?.getString("mode") ?: "DUE")
+            val count = args?.getInt("count") ?: 20
+            val config = StudyConfig(
+                scope = StudyScope(
+                    subjectId = args?.getLong("subjectId")?.orNullIfUnset(),
+                    categoryId = args?.getLong("categoryId")?.orNullIfUnset(),
+                ),
+                options = QueueOptions(
+                    mode = mode,
+                    count = if (mode == QueueMode.DUE) null else count,
+                    order = CustomOrder.valueOf(args?.getString("order") ?: "RANDOM"),
+                ),
+                cram = args?.getBoolean("cram") ?: false,
+                typeAnswer = args?.getBoolean("typeAnswer") ?: false,
+            )
+            val viewModel: StudyViewModel = viewModel(factory = StudyViewModel.factory(config))
+            val state by viewModel.uiState.collectAsState()
+            StudyScreen(
+                state = state,
+                onBack = { navController.popBackStack() },
+                onReveal = viewModel::reveal,
+                onRevealHint = viewModel::revealHint,
+                onGrade = viewModel::grade,
+                onUndo = viewModel::undo,
+                onSuspend = viewModel::suspendCurrent,
+                onTypedInputChange = viewModel::setTypedInput,
+                onCheckTypedAnswer = viewModel::checkTypedAnswer,
+            )
+        }
         composable(Destinations.IMPORT) { PlaceholderScreen("Import") }
         composable(Destinations.STATS) { PlaceholderScreen("Stats") }
         composable(Destinations.SETTINGS) { PlaceholderScreen("Settings") }

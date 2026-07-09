@@ -122,6 +122,9 @@ interface CardDao {
     @Query("DELETE FROM cards WHERE id IN (:ids)")
     suspend fun deleteByIds(ids: List<Long>)
 
+    @Query("SELECT * FROM cards WHERE categoryId = :categoryId ORDER BY createdAt")
+    suspend fun getByCategory(categoryId: Long): List<CardEntity>
+
     @Query("SELECT * FROM cards WHERE groupId = :groupId")
     suspend fun getByGroup(groupId: Long): List<CardEntity>
 

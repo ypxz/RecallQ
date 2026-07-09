@@ -69,3 +69,20 @@ Ambiguous spec details resolved with the simplest reasonable choice.
 - **Undo**: `StudySession` (immutable) records pre-grade card snapshot + review-log id;
   `undo()` restores queue/position and tells the caller which card to write back and which
   log row to delete.
+
+## Study flow UI (Phase 3)
+
+- **Type-answer "almost" threshold**: Levenshtein edit distance on normalized strings
+  (lowercased, punctuation stripped, whitespace collapsed) <= max(1, 20% of the expected
+  answer length) counts as ALMOST; the user's self-grade is always final regardless of
+  the verdict.
+- **Cloze question rendering**: the target cloze index is masked as `[...]`; other cloze
+  indices are shown revealed (Anki-style). The answer reveal shows the full text with all
+  clozes filled in.
+- **Multi-cloze save**: editing an existing cloze card edits just that row; creating a new
+  cloze card inserts one row per distinct `cN` index sharing a fresh `groupId`.
+- **Auto-suspend on mastery** (setting, default off): checked after each counted REVIEW
+  grade using the card's full log history; never triggered in cram mode.
+- **Study route args**: study config (scope, mode, count, order, cram, type-answer) is
+  passed via navigation query args rather than a shared ViewModel, keeping destinations
+  deep-linkable and state restorable.

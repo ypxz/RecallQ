@@ -9,7 +9,8 @@ object Destinations {
     const val CARD_BROWSER = "browser?subjectId={subjectId}&categoryId={categoryId}"
     const val CARD_EDITOR = "editor?cardId={cardId}&categoryId={categoryId}"
     const val STUDY_SETUP = "studySetup?subjectId={subjectId}&categoryId={categoryId}"
-    const val STUDY = "study"
+    const val STUDY =
+        "study?subjectId={subjectId}&categoryId={categoryId}&mode={mode}&count={count}&order={order}&cram={cram}&typeAnswer={typeAnswer}"
     const val IMPORT = "import"
     const val STATS = "stats"
     const val SETTINGS = "settings"
@@ -21,4 +22,14 @@ object Destinations {
         "editor?cardId=${cardId ?: -1}&categoryId=${categoryId ?: -1}"
     fun studySetup(subjectId: Long? = null, categoryId: Long? = null) =
         "studySetup?subjectId=${subjectId ?: -1}&categoryId=${categoryId ?: -1}"
+    fun study(
+        subjectId: Long? = null,
+        categoryId: Long? = null,
+        mode: String = "DUE",
+        count: Int = 20,
+        order: String = "RANDOM",
+        cram: Boolean = false,
+        typeAnswer: Boolean = false,
+    ) = "study?subjectId=${subjectId ?: -1}&categoryId=${categoryId ?: -1}" +
+        "&mode=$mode&count=$count&order=$order&cram=$cram&typeAnswer=$typeAnswer"
 }

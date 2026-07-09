@@ -53,6 +53,7 @@ fun HomeScreen(
     onCreateSubject: (String) -> Unit,
     onSubjectClick: (Long) -> Unit,
     onStudyAllDue: () -> Unit,
+    onCustomStudy: () -> Unit,
     onStatsClick: () -> Unit,
     onImportClick: () -> Unit,
     onSettingsClick: () -> Unit,
@@ -106,8 +107,11 @@ fun HomeScreen(
                         )
                     }
                 }
-                Button(onClick = onStudyAllDue, enabled = state.dueCount > 0) {
-                    Text("Study all due")
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Button(onClick = onStudyAllDue, enabled = state.dueCount > 0) {
+                        Text("Study all due")
+                    }
+                    TextButton(onClick = onCustomStudy) { Text("Custom study") }
                 }
             }
 

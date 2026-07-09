@@ -11,8 +11,18 @@ import com.recalldeck.app.ui.browser.CardBrowserScreen
 import com.recalldeck.app.ui.browser.CardBrowserUiState
 import com.recalldeck.app.ui.editor.CardEditorScreen
 import com.recalldeck.app.ui.editor.CardEditorUiState
+import com.recalldeck.app.ui.editor.ClozePreview
 import com.recalldeck.app.ui.home.HomeScreen
 import com.recalldeck.app.ui.home.HomeUiState
+import com.recalldeck.app.srs.CustomOrder
+import com.recalldeck.app.srs.Grade
+import com.recalldeck.app.srs.QueueMode
+import com.recalldeck.app.srs.TypeAnswer
+import com.recalldeck.app.ui.study.StudyScreen
+import com.recalldeck.app.ui.study.StudySetupScreen
+import com.recalldeck.app.ui.study.StudySetupUiState
+import com.recalldeck.app.ui.study.StudySummary
+import com.recalldeck.app.ui.study.StudyUiState
 import com.recalldeck.app.ui.subject.CategoryRow
 import com.recalldeck.app.ui.subject.SubjectDetailScreen
 import com.recalldeck.app.ui.subject.SubjectDetailUiState
@@ -52,6 +62,7 @@ class ScreenshotTest {
                     onCreateSubject = {},
                     onSubjectClick = {},
                     onStudyAllDue = {},
+                    onCustomStudy = {},
                     onStatsClick = {},
                     onImportClick = {},
                     onSettingsClick = {},
@@ -69,6 +80,7 @@ class ScreenshotTest {
                     onCreateSubject = {},
                     onSubjectClick = {},
                     onStudyAllDue = {},
+                    onCustomStudy = {},
                     onStatsClick = {},
                     onImportClick = {},
                     onSettingsClick = {},
@@ -102,6 +114,7 @@ class ScreenshotTest {
                     onCreateCategory = {},
                     onCategoryClick = {},
                     onBrowseAll = {},
+                    onStudy = {},
                 )
             }
         }
@@ -148,12 +161,222 @@ class ScreenshotTest {
                         canSave = true,
                     ),
                     onBack = {},
+                    onTypeChange = {},
                     onQuestionChange = {},
                     onAnswerChange = {},
                     onHintChange = {},
                     onMnemonicChange = {},
                     onElaborationChange = {},
                     onSave = {},
+                )
+            }
+        }
+    }
+
+    @Test
+    fun cardEditorCloze() {
+        paparazzi.snapshot {
+            RecallDeckTheme {
+                CardEditorScreen(
+                    state = CardEditorUiState(
+                        question = "The {{c1::mitochondria}} is the {{c2::powerhouse}} of the cell",
+                        type = CardType.CLOZE,
+                        clozePreviews = listOf(
+                            ClozePreview(1, "The [...] is the powerhouse of the cell", "mitochondria"),
+                            ClozePreview(2, "The mitochondria is the [...] of the cell", "powerhouse"),
+                        ),
+                        canSave = true,
+                    ),
+                    onBack = {},
+                    onTypeChange = {},
+                    onQuestionChange = {},
+                    onAnswerChange = {},
+                    onHintChange = {},
+                    onMnemonicChange = {},
+                    onElaborationChange = {},
+                    onSave = {},
+                )
+            }
+        }
+    }
+
+    @Test
+    fun studySetup() {
+        paparazzi.snapshot {
+            RecallDeckTheme {
+                StudySetupScreen(
+                    state = StudySetupUiState(
+                        scopeLabel = "Biology",
+                        dueCount = 8,
+                        newCount = 5,
+                        totalCount = 42,
+                        mode = QueueMode.CUSTOM,
+                        count = "25",
+                        order = CustomOrder.HARDEST,
+                        cram = true,
+                        loading = false,
+                    ),
+                    onBack = {},
+                    onModeChange = {},
+                    onCountChange = {},
+                    onOrderChange = {},
+                    onCramChange = {},
+                    onTypeAnswerChange = {},
+                    onStart = {},
+                )
+            }
+        }
+    }
+
+    private val studyBase = StudyUiState(
+        loading = false,
+        question = "What is the powerhouse of the cell?",
+        answer = "Mitochondria",
+        hint = "Organelle",
+        position = 2,
+        total = 10,
+        intervalCaptions = mapOf(
+            Grade.AGAIN to "3 min",
+            Grade.HARD to "10 min",
+            Grade.GOOD to "3 d",
+            Grade.EASY to "7 d",
+        ),
+        canUndo = true,
+    )
+
+    @Test
+    fun studyQuestion() {
+        paparazzi.snapshot {
+            RecallDeckTheme {
+                StudyScreen(
+                    state = studyBase,
+                    onBack = {},
+                    onReveal = {},
+                    onRevealHint = {},
+                    onGrade = {},
+                    onUndo = {},
+                    onSuspend = {},
+                    onTypedInputChange = {},
+                    onCheckTypedAnswer = {},
+                )
+            }
+        }
+    }
+
+    @Test
+    fun studyAnswerRevealed() {
+        paparazzi.snapshot {
+            RecallDeckTheme {
+                StudyScreen(
+                    state = studyBase.copy(
+                        revealed = true,
+                        mnemonic = "Mighty mito makes energy",
+                        elaboration = "Site of aerobic respiration and ATP production.",
+                    ),
+                    onBack = {},
+                    onReveal = {},
+                    onRevealHint = {},
+                    onGrade = {},
+                    onUndo = {},
+                    onSuspend = {},
+                    onTypedInputChange = {},
+                    onCheckTypedAnswer = {},
+                )
+            }
+        }
+    }
+
+    @Test
+    fun studyClozeQuestion() {
+        paparazzi.snapshot {
+            RecallDeckTheme {
+                StudyScreen(
+                    state = studyBase.copy(
+                        question = "The [...] is the powerhouse of the cell.",
+                        answer = "The mitochondria is the powerhouse of the cell.",
+                        isCloze = true,
+                        hint = null,
+                    ),
+                    onBack = {},
+                    onReveal = {},
+                    onRevealHint = {},
+                    onGrade = {},
+                    onUndo = {},
+                    onSuspend = {},
+                    onTypedInputChange = {},
+                    onCheckTypedAnswer = {},
+                )
+            }
+        }
+    }
+
+    @Test
+    fun studyTypeAnswer() {
+        paparazzi.snapshot {
+            RecallDeckTheme {
+                StudyScreen(
+                    state = studyBase.copy(
+                        typeAnswer = true,
+                        typedInput = "mitochondira",
+                        hint = null,
+                    ),
+                    onBack = {},
+                    onReveal = {},
+                    onRevealHint = {},
+                    onGrade = {},
+                    onUndo = {},
+                    onSuspend = {},
+                    onTypedInputChange = {},
+                    onCheckTypedAnswer = {},
+                )
+            }
+        }
+    }
+
+    @Test
+    fun studyTypeAnswerAlmost() {
+        paparazzi.snapshot {
+            RecallDeckTheme {
+                StudyScreen(
+                    state = studyBase.copy(
+                        typeAnswer = true,
+                        typedInput = "mitochondira",
+                        revealed = true,
+                        verdict = TypeAnswer.Verdict.ALMOST,
+                        hint = null,
+                    ),
+                    onBack = {},
+                    onReveal = {},
+                    onRevealHint = {},
+                    onGrade = {},
+                    onUndo = {},
+                    onSuspend = {},
+                    onTypedInputChange = {},
+                    onCheckTypedAnswer = {},
+                )
+            }
+        }
+    }
+
+    @Test
+    fun studySummary() {
+        paparazzi.snapshot {
+            RecallDeckTheme {
+                StudyScreen(
+                    state = StudyUiState(
+                        loading = false,
+                        finished = true,
+                        canUndo = true,
+                        summary = StudySummary(reviewed = 12, again = 2, hard = 3, good = 5, easy = 2),
+                    ),
+                    onBack = {},
+                    onReveal = {},
+                    onRevealHint = {},
+                    onGrade = {},
+                    onUndo = {},
+                    onSuspend = {},
+                    onTypedInputChange = {},
+                    onCheckTypedAnswer = {},
                 )
             }
         }

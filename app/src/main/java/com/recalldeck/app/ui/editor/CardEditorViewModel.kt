@@ -5,12 +5,16 @@ import androidx.lifecycle.viewModelScope
 import com.recalldeck.app.data.db.CardEntity
 import com.recalldeck.app.data.db.CardType
 import com.recalldeck.app.data.repo.DeckRepository
+import com.recalldeck.app.srs.Cloze
 import com.recalldeck.app.ui.common.containerViewModelFactory
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+
+/** One cloze index preview row: masked question and its hidden answer. */
+data class ClozePreview(val index: Int, val question: String, val answer: String)
 
 data class CardEditorUiState(
     val question: String = "",
@@ -19,6 +23,7 @@ data class CardEditorUiState(
     val mnemonic: String = "",
     val elaboration: String = "",
     val type: CardType = CardType.BASIC,
+    val clozePreviews: List<ClozePreview> = emptyList(),
     val saved: Boolean = false,
     val canSave: Boolean = false,
     val isEdit: Boolean = false,
@@ -56,6 +61,11 @@ class CardEditorViewModel(
         }
     }
 
+    fun setType(type: CardType) {
+        if (_uiState.value.isEdit) return
+        updateAndValidate { it.copy(type = type) }
+    }
+
     fun setQuestion(value: String) = updateAndValidate { it.copy(question = value) }
     fun setAnswer(value: String) = updateAndValidate { it.copy(answer = value) }
     fun setHint(value: String) = updateAndValidate { it.copy(hint = value) }
@@ -65,7 +75,22 @@ class CardEditorViewModel(
     private fun updateAndValidate(transform: (CardEditorUiState) -> CardEditorUiState) {
         _uiState.update { state ->
             val next = transform(state)
-            next.copy(canSave = next.question.isNotBlank() && next.answer.isNotBlank())
+            val previews = if (next.type == CardType.CLOZE) {
+                Cloze.indices(next.question).map { index ->
+                    ClozePreview(
+                        index = index,
+                        question = Cloze.renderQuestion(next.question, index),
+                        answer = Cloze.answerFor(next.question, index),
+                    )
+                }
+            } else {
+                emptyList()
+            }
+            val canSave = when (next.type) {
+                CardType.BASIC -> next.question.isNotBlank() && next.answer.isNotBlank()
+                CardType.CLOZE -> Cloze.isValid(next.question)
+            }
+            next.copy(clozePreviews = previews, canSave = canSave)
         }
     }
 
@@ -86,20 +111,44 @@ class CardEditorViewModel(
                     ),
                 )
             } else if (categoryId != null) {
-                repo.createCard(
-                    CardEntity(
-                        categoryId = categoryId,
-                        type = CardType.BASIC,
-                        question = state.question.trim(),
-                        answer = state.answer.trim(),
-                        hint = state.hint.trim().ifBlank { null },
-                        mnemonic = state.mnemonic.trim().ifBlank { null },
-                        elaboration = state.elaboration.trim().ifBlank { null },
-                        dueAt = now,
-                        createdAt = now,
-                        updatedAt = now,
-                    ),
-                )
+                if (state.type == CardType.CLOZE) {
+                    val text = state.question.trim()
+                    val indices = Cloze.indices(text)
+                    val groupId = if (indices.size > 1) repo.nextGroupId() else null
+                    repo.createCards(
+                        indices.map { index ->
+                            CardEntity(
+                                categoryId = categoryId,
+                                groupId = groupId,
+                                type = CardType.CLOZE,
+                                clozeIndex = index,
+                                question = text,
+                                answer = Cloze.answerFor(text, index),
+                                hint = state.hint.trim().ifBlank { null },
+                                mnemonic = state.mnemonic.trim().ifBlank { null },
+                                elaboration = state.elaboration.trim().ifBlank { null },
+                                dueAt = now,
+                                createdAt = now,
+                                updatedAt = now,
+                            )
+                        },
+                    )
+                } else {
+                    repo.createCard(
+                        CardEntity(
+                            categoryId = categoryId,
+                            type = CardType.BASIC,
+                            question = state.question.trim(),
+                            answer = state.answer.trim(),
+                            hint = state.hint.trim().ifBlank { null },
+                            mnemonic = state.mnemonic.trim().ifBlank { null },
+                            elaboration = state.elaboration.trim().ifBlank { null },
+                            dueAt = now,
+                            createdAt = now,
+                            updatedAt = now,
+                        ),
+                    )
+                }
             }
             _uiState.update { it.copy(saved = true) }
         }
