@@ -1,0 +1,9 @@
+Q: What is the capital of France?
+A: Paris.
+
+Q: What is the largest planet in the solar system?
+A: Jupiter.
+It has a mass more than twice that of all other planets combined.
+
+Q: In which year did World War II end?
+A: 1945.
