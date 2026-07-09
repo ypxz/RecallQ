@@ -29,6 +29,12 @@ interface SubjectDao {
 
     @Query("SELECT COALESCE(MAX(position), -1) + 1 FROM subjects")
     suspend fun nextPosition(): Int
+
+    @Insert
+    suspend fun insertAll(subjects: List<SubjectEntity>): List<Long>
+
+    @Query("DELETE FROM subjects")
+    suspend fun deleteAll()
 }
 
 @Dao
@@ -53,6 +59,12 @@ interface CategoryDao {
 
     @Query("SELECT COALESCE(MAX(position), -1) + 1 FROM categories WHERE subjectId = :subjectId")
     suspend fun nextPosition(subjectId: Long): Int
+
+    @Insert
+    suspend fun insertAll(categories: List<CategoryEntity>): List<Long>
+
+    @Query("DELETE FROM categories")
+    suspend fun deleteAll()
 }
 
 @Dao
@@ -115,6 +127,26 @@ interface CardDao {
 
     @Query("SELECT COALESCE(MAX(groupId), 0) + 1 FROM cards")
     suspend fun nextGroupId(): Long
+
+    @Query("SELECT * FROM cards ORDER BY createdAt")
+    suspend fun getAll(): List<CardEntity>
+
+    @Query(
+        """SELECT cards.* FROM cards
+           JOIN categories ON categories.id = cards.categoryId
+           WHERE categories.subjectId = :subjectId
+           ORDER BY cards.createdAt""",
+    )
+    suspend fun getBySubject(subjectId: Long): List<CardEntity>
+
+    @Query(
+        """SELECT COUNT(*) FROM cards
+           WHERE state IN ('LEARNING', 'REVIEW') AND dueAt <= :now""",
+    )
+    suspend fun getDueCount(now: Long): Int
+
+    @Query("DELETE FROM cards")
+    suspend fun deleteAll()
 }
 
 @Dao
@@ -133,4 +165,10 @@ interface ReviewLogDao {
 
     @Query("SELECT * FROM review_logs ORDER BY reviewedAt")
     suspend fun getAll(): List<ReviewLogEntity>
+
+    @Insert
+    suspend fun insertAll(logs: List<ReviewLogEntity>): List<Long>
+
+    @Query("DELETE FROM review_logs")
+    suspend fun deleteAll()
 }
