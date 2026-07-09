@@ -42,6 +42,8 @@ class DeckRepository(
 
     suspend fun getCategory(id: Long): CategoryEntity? = categoryDao.getById(id)
 
+    suspend fun getAllCategories(): List<CategoryEntity> = categoryDao.getAll()
+
     suspend fun createCategory(subjectId: Long, name: String): Long =
         categoryDao.insert(
             CategoryEntity(
