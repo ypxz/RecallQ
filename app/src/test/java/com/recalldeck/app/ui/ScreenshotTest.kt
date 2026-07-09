@@ -14,6 +14,20 @@ import com.recalldeck.app.ui.editor.CardEditorUiState
 import com.recalldeck.app.ui.editor.ClozePreview
 import com.recalldeck.app.ui.home.HomeScreen
 import com.recalldeck.app.ui.home.HomeUiState
+import com.recalldeck.app.data.repo.AppSettings
+import com.recalldeck.app.data.stats.ForecastDay
+import com.recalldeck.app.data.stats.HeatmapDay
+import com.recalldeck.app.data.stats.StatsSnapshot
+import com.recalldeck.app.data.stats.SubjectBreakdown
+import com.recalldeck.app.importer.ParsedCard
+import com.recalldeck.app.ui.importer.ImportPreset
+import com.recalldeck.app.ui.importer.ImportScreen
+import com.recalldeck.app.ui.importer.ImportUiState
+import com.recalldeck.app.ui.settings.SettingsScreen
+import com.recalldeck.app.ui.settings.SettingsUiState
+import com.recalldeck.app.ui.stats.StatsScreen
+import com.recalldeck.app.ui.stats.StatsUiState
+import java.time.LocalDate
 import com.recalldeck.app.srs.CustomOrder
 import com.recalldeck.app.srs.Grade
 import com.recalldeck.app.srs.QueueMode
@@ -377,6 +391,134 @@ class ScreenshotTest {
                     onSuspend = {},
                     onTypedInputChange = {},
                     onCheckTypedAnswer = {},
+                )
+            }
+        }
+    }
+
+    @Test
+    fun importEmpty() {
+        paparazzi.snapshot {
+            RecallDeckTheme {
+                ImportScreen(
+                    state = ImportUiState(),
+                    onBack = {},
+                    onPickFile = {},
+                    onPresetChange = {},
+                    onToggleCard = { _ -> },
+                    onEditCard = { _, _, _ -> },
+                    onSubjectSelect = {},
+                    onCategorySelect = {},
+                    onSave = {},
+                )
+            }
+        }
+    }
+
+    @Test
+    fun importPreview() {
+        paparazzi.snapshot {
+            RecallDeckTheme {
+                ImportScreen(
+                    state = ImportUiState(
+                        fileName = "biology-notes.pdf",
+                        preset = ImportPreset.QA_PAIRS,
+                        cards = listOf(
+                            ParsedCard("What is the powerhouse of the cell?", "Mitochondria"),
+                            ParsedCard("Define osmosis", "Diffusion of water across a membrane"),
+                            ParsedCard("What does DNA stand for?", "Deoxyribonucleic acid", enabled = false),
+                        ),
+                        subjects = subjects,
+                        categories = listOf(
+                            CategoryEntity(id = 1, subjectId = 1, name = "Cell structure", position = 0, createdAt = 0),
+                        ),
+                        selectedSubjectId = 1,
+                        selectedCategoryId = 1,
+                    ),
+                    onBack = {},
+                    onPickFile = {},
+                    onPresetChange = {},
+                    onToggleCard = { _ -> },
+                    onEditCard = { _, _, _ -> },
+                    onSubjectSelect = {},
+                    onCategorySelect = {},
+                    onSave = {},
+                )
+            }
+        }
+    }
+
+    @Test
+    fun stats() {
+        val start = LocalDate.of(2026, 4, 15)
+        paparazzi.snapshot {
+            RecallDeckTheme {
+                StatsScreen(
+                    state = StatsUiState(
+                        loading = false,
+                        snapshot = StatsSnapshot(
+                            currentStreakDays = 7,
+                            heatmap = List(84) { i ->
+                                HeatmapDay(start.plusDays(i.toLong()), (i * 7) % 11)
+                            },
+                            forecast = List(31) { i ->
+                                ForecastDay(start.plusDays(84L + i), ((i * 5) % 17))
+                            },
+                            retentionPercent = 87.5,
+                            subjectBreakdown = listOf(
+                                SubjectBreakdown(
+                                    subjectId = 1,
+                                    subjectName = "Biology",
+                                    stateCounts = mapOf(
+                                        CardState.NEW to 10,
+                                        CardState.LEARNING to 4,
+                                        CardState.REVIEW to 28,
+                                        CardState.SUSPENDED to 2,
+                                    ),
+                                ),
+                                SubjectBreakdown(
+                                    subjectId = 2,
+                                    subjectName = "Organic Chemistry",
+                                    stateCounts = mapOf(
+                                        CardState.NEW to 20,
+                                        CardState.REVIEW to 6,
+                                    ),
+                                ),
+                            ),
+                        ),
+                    ),
+                    onBack = {},
+                )
+            }
+        }
+    }
+
+    @Test
+    fun settings() {
+        paparazzi.snapshot {
+            RecallDeckTheme {
+                SettingsScreen(
+                    state = SettingsUiState(
+                        settings = AppSettings(
+                            retentionTarget = 0.9,
+                            newPerDay = 20,
+                            reminderEnabled = true,
+                            reminderHour = 18,
+                            reminderMinute = 30,
+                        ),
+                        subjects = subjects,
+                    ),
+                    onBack = {},
+                    onRetentionTargetChange = {},
+                    onNewPerDayChange = {},
+                    onThemeModeChange = {},
+                    onAutoSuspendChange = {},
+                    onReminderEnabledChange = {},
+                    onPickReminderTime = {},
+                    onExportBackup = {},
+                    onImportBackup = {},
+                    onExportCsv = {},
+                    onDismissMessage = {},
                 )
             }
         }

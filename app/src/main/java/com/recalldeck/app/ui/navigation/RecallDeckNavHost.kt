@@ -1,13 +1,13 @@
 package com.recalldeck.app.ui.navigation
 
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.Text
+import android.app.TimePickerDialog
+import android.provider.OpenableColumns
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
@@ -20,6 +20,12 @@ import com.recalldeck.app.ui.editor.CardEditorScreen
 import com.recalldeck.app.ui.editor.CardEditorViewModel
 import com.recalldeck.app.ui.home.HomeScreen
 import com.recalldeck.app.ui.home.HomeViewModel
+import com.recalldeck.app.ui.importer.ImportScreen
+import com.recalldeck.app.ui.importer.ImportViewModel
+import com.recalldeck.app.ui.settings.SettingsScreen
+import com.recalldeck.app.ui.settings.SettingsViewModel
+import com.recalldeck.app.ui.stats.StatsScreen
+import com.recalldeck.app.ui.stats.StatsViewModel
 import com.recalldeck.app.data.repo.StudyScope
 import com.recalldeck.app.srs.CustomOrder
 import com.recalldeck.app.srs.QueueMode
@@ -205,15 +211,111 @@ fun RecallDeckNavHost(navController: NavHostController) {
                 onCheckTypedAnswer = viewModel::checkTypedAnswer,
             )
         }
-        composable(Destinations.IMPORT) { PlaceholderScreen("Import") }
-        composable(Destinations.STATS) { PlaceholderScreen("Stats") }
-        composable(Destinations.SETTINGS) { PlaceholderScreen("Settings") }
-    }
-}
-
-@Composable
-private fun PlaceholderScreen(name: String) {
-    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-        Text(text = name)
+        composable(Destinations.IMPORT) {
+            val viewModel: ImportViewModel = viewModel(factory = ImportViewModel.Factory)
+            val state by viewModel.uiState.collectAsState()
+            val context = LocalContext.current
+            val pickFileLauncher = rememberLauncherForActivityResult(
+                ActivityResultContracts.OpenDocument(),
+            ) { uri ->
+                if (uri != null) {
+                    val name = context.contentResolver
+                        .query(uri, arrayOf(OpenableColumns.DISPLAY_NAME), null, null, null)
+                        ?.use { cursor -> if (cursor.moveToFirst()) cursor.getString(0) else null }
+                        ?: uri.lastPathSegment.orEmpty()
+                    viewModel.loadFile(name) { context.contentResolver.openInputStream(uri) }
+                }
+            }
+            ImportScreen(
+                state = state,
+                onBack = { navController.popBackStack() },
+                onPickFile = {
+                    pickFileLauncher.launch(
+                        arrayOf("application/pdf", "text/*", "application/octet-stream"),
+                    )
+                },
+                onPresetChange = viewModel::setPreset,
+                onToggleCard = viewModel::toggleCard,
+                onEditCard = viewModel::editCard,
+                onSubjectSelect = viewModel::selectSubject,
+                onCategorySelect = viewModel::selectCategory,
+                onSave = viewModel::save,
+            )
+        }
+        composable(Destinations.STATS) {
+            val viewModel: StatsViewModel = viewModel(factory = StatsViewModel.Factory)
+            val state by viewModel.uiState.collectAsState()
+            StatsScreen(state = state, onBack = { navController.popBackStack() })
+        }
+        composable(Destinations.SETTINGS) {
+            val viewModel: SettingsViewModel = viewModel(factory = SettingsViewModel.Factory)
+            val state by viewModel.uiState.collectAsState()
+            val context = LocalContext.current
+            val exportBackupLauncher = rememberLauncherForActivityResult(
+                ActivityResultContracts.CreateDocument("application/json"),
+            ) { uri ->
+                if (uri != null) {
+                    viewModel.exportBackup { context.contentResolver.openOutputStream(uri) }
+                }
+            }
+            val importBackupLauncher = rememberLauncherForActivityResult(
+                ActivityResultContracts.OpenDocument(),
+            ) { uri ->
+                if (uri != null) {
+                    viewModel.importBackup { context.contentResolver.openInputStream(uri) }
+                }
+            }
+            val csvSubjectId = androidx.compose.runtime.remember {
+                androidx.compose.runtime.mutableStateOf<Long?>(null)
+            }
+            val exportCsvLauncher = rememberLauncherForActivityResult(
+                ActivityResultContracts.CreateDocument("text/csv"),
+            ) { uri ->
+                val subjectId = csvSubjectId.value
+                if (uri != null && subjectId != null) {
+                    viewModel.exportSubjectCsv(subjectId) {
+                        context.contentResolver.openOutputStream(uri)
+                    }
+                }
+            }
+            val notificationPermissionLauncher = rememberLauncherForActivityResult(
+                ActivityResultContracts.RequestPermission(),
+            ) { granted ->
+                viewModel.setReminderEnabled(granted)
+            }
+            SettingsScreen(
+                state = state,
+                onBack = { navController.popBackStack() },
+                onRetentionTargetChange = viewModel::setRetentionTarget,
+                onNewPerDayChange = viewModel::setNewPerDay,
+                onThemeModeChange = viewModel::setThemeMode,
+                onAutoSuspendChange = viewModel::setAutoSuspendMastered,
+                onReminderEnabledChange = { enabled ->
+                    if (enabled && android.os.Build.VERSION.SDK_INT >= 33) {
+                        notificationPermissionLauncher.launch(
+                            android.Manifest.permission.POST_NOTIFICATIONS,
+                        )
+                    } else {
+                        viewModel.setReminderEnabled(enabled)
+                    }
+                },
+                onPickReminderTime = {
+                    TimePickerDialog(
+                        context,
+                        { _, hour, minute -> viewModel.setReminderTime(hour, minute) },
+                        state.settings.reminderHour,
+                        state.settings.reminderMinute,
+                        true,
+                    ).show()
+                },
+                onExportBackup = { exportBackupLauncher.launch("recalldeck-backup.json") },
+                onImportBackup = { importBackupLauncher.launch(arrayOf("application/json")) },
+                onExportCsv = { subjectId ->
+                    csvSubjectId.value = subjectId
+                    exportCsvLauncher.launch("recalldeck-subject-$subjectId.csv")
+                },
+                onDismissMessage = viewModel::dismissMessage,
+            )
+        }
     }
 }
