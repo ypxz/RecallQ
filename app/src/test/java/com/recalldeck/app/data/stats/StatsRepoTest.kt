@@ -3,6 +3,7 @@ package com.recalldeck.app.data.stats
 import android.content.Context
 import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
+import com.recalldeck.app.data.db.CardBucket
 import com.recalldeck.app.data.db.CardEntity
 import com.recalldeck.app.data.db.CardState
 import com.recalldeck.app.data.db.CardType
@@ -107,8 +108,8 @@ class StatsRepoTest {
         assertEquals(1, snapshot.forecast[2].dueCount)
         assertEquals(50.0, snapshot.retentionPercent!!, 0.0001)
         val bio = snapshot.subjectBreakdown.single()
-        assertEquals(1, bio.stateCounts[CardState.REVIEW])
-        assertEquals(1, bio.stateCounts[CardState.NEW])
+        assertEquals(1, bio.bucketCounts[CardBucket.MEDIUM])
+        assertEquals(1, bio.bucketCounts[CardBucket.NOT_STUDIED])
     }
 
     private fun reviewLog(cardId: Long, reviewedAt: Long, rating: Int) = ReviewLogEntity(

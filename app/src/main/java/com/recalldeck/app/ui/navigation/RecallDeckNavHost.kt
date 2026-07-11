@@ -100,7 +100,7 @@ fun RecallDeckNavHost(navController: NavHostController) {
                 state = state,
                 onBack = { navController.popBackStack() },
                 onQueryChange = viewModel::setQuery,
-                onStateFilterChange = viewModel::setStateFilter,
+                onBucketFilterChange = viewModel::setBucketFilter,
                 onToggleSelection = viewModel::toggleSelection,
                 onClearSelection = viewModel::clearSelection,
                 onDeleteSelected = viewModel::deleteSelected,

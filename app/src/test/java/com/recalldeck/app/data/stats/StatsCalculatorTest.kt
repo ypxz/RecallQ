@@ -1,5 +1,6 @@
 package com.recalldeck.app.data.stats
 
+import com.recalldeck.app.data.db.CardBucket
 import com.recalldeck.app.data.db.CardEntity
 import com.recalldeck.app.data.db.CardState
 import com.recalldeck.app.data.db.CardType
@@ -25,8 +26,9 @@ class StatsCalculatorTest {
         reviewedAt: Long,
         rating: Int = 3,
         counted: Boolean = true,
+        cardId: Long = 1,
     ) = ReviewLogEntity(
-        cardId = 1,
+        cardId = cardId,
         reviewedAt = reviewedAt,
         rating = rating,
         stateBefore = CardState.REVIEW,
@@ -40,7 +42,9 @@ class StatsCalculatorTest {
         categoryId: Long = 1,
         state: CardState = CardState.REVIEW,
         dueAt: Long = 0,
+        id: Long = 0,
     ) = CardEntity(
+        id = id,
         categoryId = categoryId,
         type = CardType.BASIC,
         question = "q",
@@ -202,7 +206,7 @@ class StatsCalculatorTest {
     // ---- subjectBreakdown ----
 
     @Test
-    fun subjectBreakdownCountsStatesPerSubject() {
+    fun subjectBreakdownBucketsCardsByLastCountedRating() {
         val subjects = listOf(
             SubjectEntity(id = 1, name = "Bio", colorHex = "#fff", position = 0, createdAt = 1),
             SubjectEntity(id = 2, name = "Law", colorHex = "#fff", position = 1, createdAt = 2),
@@ -212,20 +216,31 @@ class StatsCalculatorTest {
             CategoryEntity(id = 20, subjectId = 2, name = "c2", position = 0, createdAt = 1),
         )
         val cards = listOf(
-            card(categoryId = 10, state = CardState.NEW),
-            card(categoryId = 10, state = CardState.NEW),
-            card(categoryId = 10, state = CardState.REVIEW),
-            card(categoryId = 20, state = CardState.SUSPENDED),
+            card(id = 1, categoryId = 10, state = CardState.NEW),
+            card(id = 2, categoryId = 10, state = CardState.LEARNING),
+            card(id = 3, categoryId = 10, state = CardState.REVIEW),
+            card(id = 4, categoryId = 20, state = CardState.SUSPENDED),
         )
-        val breakdown = StatsCalculator.subjectBreakdown(subjects, categories, cards)
+        val logs = listOf(
+            // Card 2: last counted rating is 1 (Very hard); a later cram log is ignored.
+            log(reviewedAt = 100, rating = 3, cardId = 2),
+            log(reviewedAt = 200, rating = 1, cardId = 2),
+            log(reviewedAt = 300, rating = 2, cardId = 2, counted = false),
+            // Card 3: last counted rating is 4 (Easy).
+            log(reviewedAt = 100, rating = 4, cardId = 3),
+            // Card 4 is suspended regardless of its ratings.
+            log(reviewedAt = 100, rating = 3, cardId = 4),
+        )
+        val breakdown = StatsCalculator.subjectBreakdown(subjects, categories, cards, logs)
         assertEquals(2, breakdown.size)
         val bio = breakdown[0]
         assertEquals("Bio", bio.subjectName)
-        assertEquals(2, bio.stateCounts[CardState.NEW])
-        assertEquals(1, bio.stateCounts[CardState.REVIEW])
+        assertEquals(1, bio.bucketCounts[CardBucket.NOT_STUDIED])
+        assertEquals(1, bio.bucketCounts[CardBucket.VERY_HARD])
+        assertEquals(1, bio.bucketCounts[CardBucket.EASY])
         assertEquals(3, bio.totalCards)
         val law = breakdown[1]
-        assertEquals(1, law.stateCounts[CardState.SUSPENDED])
+        assertEquals(1, law.bucketCounts[CardBucket.NEVER_ASK])
         assertEquals(1, law.totalCards)
     }
 
@@ -234,8 +249,21 @@ class StatsCalculatorTest {
         val subjects = listOf(
             SubjectEntity(id = 1, name = "Empty", colorHex = "#fff", position = 0, createdAt = 1),
         )
-        val breakdown = StatsCalculator.subjectBreakdown(subjects, emptyList(), emptyList())
+        val breakdown =
+            StatsCalculator.subjectBreakdown(subjects, emptyList(), emptyList(), emptyList())
         assertEquals(1, breakdown.size)
         assertEquals(0, breakdown[0].totalCards)
+    }
+
+    // ---- CardBucket ----
+
+    @Test
+    fun cardBucketMapsStateAndLastRating() {
+        assertEquals(CardBucket.NOT_STUDIED, CardBucket.of(CardState.NEW, null))
+        assertEquals(CardBucket.VERY_HARD, CardBucket.of(CardState.LEARNING, 1))
+        assertEquals(CardBucket.HARD, CardBucket.of(CardState.LEARNING, 2))
+        assertEquals(CardBucket.MEDIUM, CardBucket.of(CardState.REVIEW, 3))
+        assertEquals(CardBucket.EASY, CardBucket.of(CardState.REVIEW, 4))
+        assertEquals(CardBucket.NEVER_ASK, CardBucket.of(CardState.SUSPENDED, 4))
     }
 }

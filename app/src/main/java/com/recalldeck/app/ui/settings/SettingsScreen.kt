@@ -121,12 +121,12 @@ fun SettingsScreen(
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             Spacer(Modifier.height(4.dp))
-            StepperRow("Don't know", state.settings.againDelayMinutes, onAgainDelayChange)
-            StepperRow("Kind of (new card)", state.settings.newHardDelayMinutes, onNewHardDelayChange)
-            StepperRow("Know it (new card)", state.settings.newGoodDelayMinutes, onNewGoodDelayChange)
-            StepperRow("Kind of (learning card)", state.settings.learningHardDelayMinutes, onLearningHardDelayChange)
+            StepperRow("Very hard", state.settings.againDelayMinutes, onAgainDelayChange)
+            StepperRow("Hard (new card)", state.settings.newHardDelayMinutes, onNewHardDelayChange)
+            StepperRow("Medium (new card)", state.settings.newGoodDelayMinutes, onNewGoodDelayChange)
+            StepperRow("Hard (seen card)", state.settings.learningHardDelayMinutes, onLearningHardDelayChange)
             ToggleRow(
-                title = "\"Don't know\" cards return at end of session",
+                title = "\"Very hard\" cards return at end of session",
                 subtitle = "Instead of about 10 cards later in the same session",
                 checked = state.settings.againAtSessionEnd,
                 onCheckedChange = onAgainAtSessionEndChange,

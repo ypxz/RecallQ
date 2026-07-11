@@ -1,6 +1,6 @@
 package com.recalldeck.app.data.stats
 
-import com.recalldeck.app.data.db.CardState
+import com.recalldeck.app.data.db.CardBucket
 import java.time.LocalDate
 
 /** One day cell of the 12-week review heatmap. */
@@ -18,9 +18,9 @@ data class ForecastDay(
 data class SubjectBreakdown(
     val subjectId: Long,
     val subjectName: String,
-    val stateCounts: Map<CardState, Int>,
+    val bucketCounts: Map<CardBucket, Int>,
 ) {
-    val totalCards: Int get() = stateCounts.values.sum()
+    val totalCards: Int get() = bucketCounts.values.sum()
 }
 
 data class StatsSnapshot(

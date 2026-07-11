@@ -2,8 +2,10 @@ package com.recalldeck.app.data.repo
 
 import com.recalldeck.app.data.db.CardDao
 import com.recalldeck.app.data.db.CardEntity
+import com.recalldeck.app.data.db.CardLastRating
 import com.recalldeck.app.data.db.ReviewLogDao
 import com.recalldeck.app.data.db.ReviewLogEntity
+import kotlinx.coroutines.flow.Flow
 
 /** Study scope: all cards, one subject, or one category. */
 data class StudyScope(val subjectId: Long? = null, val categoryId: Long? = null)
@@ -37,6 +39,9 @@ class StudyRepository(
     }
 
     suspend fun getCard(id: Long): CardEntity? = cardDao.getById(id)
+
+    /** Last counted rating per card, for bucketing cards by what the user last clicked. */
+    fun observeLastRatings(): Flow<List<CardLastRating>> = reviewLogDao.observeLastRatings()
 
     suspend fun updateCard(card: CardEntity) = cardDao.update(card)
 

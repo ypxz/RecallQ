@@ -102,6 +102,14 @@ Ambiguous spec details resolved with the simplest reasonable choice.
 - **Again-at-session-end** (setting, default off): "Don't know" re-inserts the card at the
   end of the current session queue instead of ~10 positions later; the stored dueAt delay
   is unchanged.
+- **Difficulty scale ("Easy / Medium / Hard / Very hard")**: grade buttons are labelled
+  Easy (4) / Medium (3) / Hard (2) / Very hard (1 = Again), replacing the earlier
+  "Know 100% … Don't know" labels. Card categories in the browser and stats use the same
+  scale, derived from the last *counted* rating per card (`CardBucket`), plus
+  "Not studied" (never reviewed) and "Never ask" (suspended). Cram reviews never change a
+  card's bucket. Learning-step settings reuse the same names, and the browser shows a
+  caption with the current minute intervals. Internal enum names and the DB schema are
+  unchanged.
 - **In-detail explanation**: after the answer is revealed, a card's elaboration is no
   longer shown automatically; an "In detail" chip appears (only when the elaboration is
   non-blank) and expands the text on tap. Applies identically in cram and type-answer
@@ -112,3 +120,4 @@ Ambiguous spec details resolved with the simplest reasonable choice.
   CSV export now always writes the three-column header `question;answer;explanation`
   with an empty third field for cards without an elaboration. Extra columns beyond the
   third are still ignored.
+>>>>>>> origin/main

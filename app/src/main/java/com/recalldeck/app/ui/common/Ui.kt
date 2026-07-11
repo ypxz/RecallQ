@@ -17,15 +17,6 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.CreationExtras
 import com.recalldeck.app.AppContainer
 import com.recalldeck.app.RecallDeckApplication
-import com.recalldeck.app.data.db.CardState
-
-/** User-facing name for a card's scheduling state ("do I know this card?"). */
-fun CardState.displayLabel(): String = when (this) {
-    CardState.NEW -> "Not studied"
-    CardState.LEARNING -> "Kind of know"
-    CardState.REVIEW -> "Know"
-    CardState.SUSPENDED -> "Never ask"
-}
 
 /** Parses "#RRGGBB" safely, falling back to a neutral color. */
 fun parseColorHex(hex: String): Color = try {

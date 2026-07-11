@@ -1,5 +1,6 @@
 package com.recalldeck.app.data.stats
 
+import com.recalldeck.app.data.db.CardBucket
 import com.recalldeck.app.data.db.CardEntity
 import com.recalldeck.app.data.db.CardState
 import com.recalldeck.app.data.db.CategoryEntity
@@ -95,19 +96,27 @@ object StatsCalculator {
         return remembered * 100.0 / window.size
     }
 
-    /** Card counts per state for every subject, in subject position order. */
+    /**
+     * Card counts per bucket (last clicked grade) for every subject, in
+     * subject position order.
+     */
     fun subjectBreakdown(
         subjects: List<SubjectEntity>,
         categories: List<CategoryEntity>,
         cards: List<CardEntity>,
+        logs: List<ReviewLogEntity>,
     ): List<SubjectBreakdown> {
+        val lastRatingByCard = logs
+            .filter { it.countedTowardSchedule }
+            .groupBy { it.cardId }
+            .mapValues { (_, cardLogs) -> cardLogs.maxBy { it.reviewedAt }.rating }
         val subjectByCategory = categories.associate { it.id to it.subjectId }
         val cardsBySubject = cards.groupBy { subjectByCategory[it.categoryId] }
         return subjects.map { subject ->
-            val stateCounts = (cardsBySubject[subject.id] ?: emptyList())
-                .groupingBy { it.state }
+            val bucketCounts = (cardsBySubject[subject.id] ?: emptyList())
+                .groupingBy { CardBucket.of(it.state, lastRatingByCard[it.id]) }
                 .eachCount()
-            SubjectBreakdown(subject.id, subject.name, stateCounts)
+            SubjectBreakdown(subject.id, subject.name, bucketCounts)
         }
     }
 }
