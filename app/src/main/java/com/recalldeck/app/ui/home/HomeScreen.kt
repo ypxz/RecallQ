@@ -1,8 +1,13 @@
 package com.recalldeck.app.ui.home
 
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -46,6 +51,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.recalldeck.app.data.db.SubjectEntity
 import com.recalldeck.app.ui.common.EmptyState
+import com.recalldeck.app.ui.common.SUBJECT_COLORS
 import com.recalldeck.app.ui.common.parseColorHex
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -53,6 +59,8 @@ import com.recalldeck.app.ui.common.parseColorHex
 fun HomeScreen(
     state: HomeUiState,
     onCreateSubject: (String) -> Unit,
+    onUpdateSubject: (SubjectEntity, String, String) -> Unit,
+    onDeleteSubject: (SubjectEntity) -> Unit,
     onSubjectClick: (Long) -> Unit,
     onStudyAllDue: () -> Unit,
     onCustomStudy: () -> Unit,
@@ -61,6 +69,8 @@ fun HomeScreen(
     onSettingsClick: () -> Unit,
 ) {
     var showCreateDialog by remember { mutableStateOf(false) }
+    var subjectToEdit by remember { mutableStateOf<SubjectEntity?>(null) }
+    var subjectToDelete by remember { mutableStateOf<SubjectEntity?>(null) }
 
     Scaffold(
         topBar = {
@@ -149,7 +159,11 @@ fun HomeScreen(
                     horizontalArrangement = Arrangement.spacedBy(12.dp),
                 ) {
                     items(state.subjects, key = { it.id }) { subject ->
-                        SubjectCard(subject = subject, onClick = { onSubjectClick(subject.id) })
+                        SubjectCard(
+                            subject = subject,
+                            onClick = { onSubjectClick(subject.id) },
+                            onLongClick = { subjectToEdit = subject },
+                        )
                     }
                 }
             }
@@ -183,11 +197,122 @@ fun HomeScreen(
             },
         )
     }
+
+    subjectToEdit?.let { subject ->
+        var name by remember(subject.id) { mutableStateOf(subject.name) }
+        var colorHex by remember(subject.id) { mutableStateOf(subject.colorHex) }
+        AlertDialog(
+            onDismissRequest = { subjectToEdit = null },
+            title = { Text("Edit subject") },
+            text = {
+                SubjectEditFields(
+                    name = name,
+                    colorHex = colorHex,
+                    onNameChange = { name = it },
+                    onColorChange = { colorHex = it },
+                )
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        onUpdateSubject(subject, name.trim(), colorHex)
+                        subjectToEdit = null
+                    },
+                    enabled = name.isNotBlank(),
+                ) { Text("Save") }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = {
+                        subjectToDelete = subject
+                        subjectToEdit = null
+                    },
+                ) {
+                    Text("Delete", color = MaterialTheme.colorScheme.error)
+                }
+                TextButton(onClick = { subjectToEdit = null }) { Text("Cancel") }
+            },
+        )
+    }
+
+    subjectToDelete?.let { subject ->
+        AlertDialog(
+            onDismissRequest = { subjectToDelete = null },
+            title = { Text("Delete subject?") },
+            text = {
+                Text(
+                    "\"${subject.name}\" and all of its categories and cards " +
+                        "will be permanently deleted.",
+                )
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        onDeleteSubject(subject)
+                        subjectToDelete = null
+                    },
+                ) {
+                    Text("Delete", color = MaterialTheme.colorScheme.error)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { subjectToDelete = null }) { Text("Cancel") }
+            },
+        )
+    }
 }
 
 @Composable
-private fun SubjectCard(subject: SubjectEntity, onClick: () -> Unit) {
-    Card(modifier = Modifier.clickable(onClick = onClick)) {
+internal fun SubjectEditFields(
+    name: String,
+    colorHex: String,
+    onNameChange: (String) -> Unit,
+    onColorChange: (String) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Column(modifier = modifier) {
+        OutlinedTextField(
+            value = name,
+            onValueChange = onNameChange,
+            label = { Text("Name") },
+            singleLine = true,
+        )
+        Spacer(modifier = Modifier.height(16.dp))
+        Text("Color", style = MaterialTheme.typography.labelLarge)
+        Spacer(modifier = Modifier.height(8.dp))
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            SUBJECT_COLORS.forEach { hex ->
+                val selected = hex.equals(colorHex, ignoreCase = true)
+                Box(
+                    modifier = Modifier
+                        .size(28.dp)
+                        .then(
+                            if (selected) {
+                                Modifier.border(
+                                    BorderStroke(2.dp, MaterialTheme.colorScheme.onSurface),
+                                    CircleShape,
+                                )
+                            } else {
+                                Modifier
+                            },
+                        )
+                        .padding(4.dp)
+                        .background(parseColorHex(hex), CircleShape)
+                        .clickable { onColorChange(hex) },
+                )
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+private fun SubjectCard(
+    subject: SubjectEntity,
+    onClick: () -> Unit,
+    onLongClick: () -> Unit,
+) {
+    Card(modifier = Modifier.combinedClickable(onClick = onClick, onLongClick = onLongClick)) {
         Column(modifier = Modifier.padding(16.dp)) {
             Spacer(
                 modifier = Modifier

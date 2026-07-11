@@ -35,6 +35,9 @@ class DeckRepository(
     suspend fun renameSubject(subject: SubjectEntity, name: String) =
         subjectDao.update(subject.copy(name = name))
 
+    suspend fun updateSubject(subject: SubjectEntity, name: String, colorHex: String) =
+        subjectDao.update(subject.copy(name = name, colorHex = colorHex))
+
     suspend fun deleteSubject(subject: SubjectEntity) = subjectDao.delete(subject)
 
     fun observeCategories(subjectId: Long): Flow<List<CategoryEntity>> =

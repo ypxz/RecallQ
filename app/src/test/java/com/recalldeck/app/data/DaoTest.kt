@@ -88,6 +88,33 @@ class DaoTest {
     }
 
     @Test
+    fun deletingCategoryCascadesToCards() = runTest {
+        val subjectId = seedSubject()
+        val categoryId = seedCategory(subjectId)
+        val keptCategoryId = seedCategory(subjectId, "Kept")
+        val cardId = db.cardDao().insert(card(categoryId))
+        val keptCardId = db.cardDao().insert(card(keptCategoryId))
+
+        db.categoryDao().delete(db.categoryDao().getById(categoryId)!!)
+
+        assertNull(db.cardDao().getById(cardId))
+        assertNotNull(db.subjectDao().getById(subjectId))
+        assertNotNull(db.cardDao().getById(keptCardId))
+    }
+
+    @Test
+    fun updatingSubjectNameAndColor() = runTest {
+        val subjectId = seedSubject()
+        val subject = db.subjectDao().getById(subjectId)!!
+
+        db.subjectDao().update(subject.copy(name = "Chemistry", colorHex = "#29B6F6"))
+
+        val updated = db.subjectDao().getById(subjectId)!!
+        assertEquals("Chemistry", updated.name)
+        assertEquals("#29B6F6", updated.colorHex)
+    }
+
+    @Test
     fun deletingCardCascadesToReviewLogs() = runTest {
         val categoryId = seedCategory(seedSubject())
         val cardId = db.cardDao().insert(card(categoryId))

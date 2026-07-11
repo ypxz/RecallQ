@@ -53,6 +53,8 @@ fun RecallDeckNavHost(navController: NavHostController) {
             HomeScreen(
                 state = state,
                 onCreateSubject = viewModel::createSubject,
+                onUpdateSubject = viewModel::updateSubject,
+                onDeleteSubject = viewModel::deleteSubject,
                 onSubjectClick = { navController.navigate(Destinations.subjectDetail(it)) },
                 onStudyAllDue = { navController.navigate(Destinations.study()) },
                 onCustomStudy = { navController.navigate(Destinations.studySetup()) },
@@ -73,6 +75,8 @@ fun RecallDeckNavHost(navController: NavHostController) {
                 state = state,
                 onBack = { navController.popBackStack() },
                 onCreateCategory = viewModel::createCategory,
+                onRenameCategory = viewModel::renameCategory,
+                onDeleteCategory = viewModel::deleteCategory,
                 onCategoryClick = {
                     navController.navigate(Destinations.cardBrowser(categoryId = it))
                 },

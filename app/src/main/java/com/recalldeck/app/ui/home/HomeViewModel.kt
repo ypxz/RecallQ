@@ -36,6 +36,15 @@ class HomeViewModel(private val repo: DeckRepository) : ViewModel() {
         }
     }
 
+    fun updateSubject(subject: SubjectEntity, name: String, colorHex: String) {
+        if (name.isBlank()) return
+        viewModelScope.launch { repo.updateSubject(subject, name.trim(), colorHex) }
+    }
+
+    fun deleteSubject(subject: SubjectEntity) {
+        viewModelScope.launch { repo.deleteSubject(subject) }
+    }
+
     companion object {
         val Factory = containerViewModelFactory { HomeViewModel(it.deckRepository) }
     }
