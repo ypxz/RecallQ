@@ -86,6 +86,24 @@ class ScreenshotTest {
     }
 
     @Test
+    fun homeDark() {
+        paparazzi.snapshot {
+            RecallDeckTheme(darkTheme = true) {
+                HomeScreen(
+                    state = HomeUiState(subjects = subjects, dueCount = 12, streak = 4, loading = false),
+                    onCreateSubject = {},
+                    onSubjectClick = {},
+                    onStudyAllDue = {},
+                    onCustomStudy = {},
+                    onStatsClick = {},
+                    onImportClick = {},
+                    onSettingsClick = {},
+                )
+            }
+        }
+    }
+
+    @Test
     fun homeEmpty() {
         paparazzi.snapshot {
             RecallDeckTheme {
@@ -301,6 +319,29 @@ class ScreenshotTest {
     }
 
     @Test
+    fun studyAnswerRevealedDark() {
+        paparazzi.snapshot {
+            RecallDeckTheme(darkTheme = true) {
+                StudyScreen(
+                    state = studyBase.copy(
+                        revealed = true,
+                        mnemonic = "Mighty mito makes energy",
+                        elaboration = "Site of aerobic respiration and ATP production.",
+                    ),
+                    onBack = {},
+                    onReveal = {},
+                    onRevealHint = {},
+                    onGrade = {},
+                    onUndo = {},
+                    onSuspend = {},
+                    onTypedInputChange = {},
+                    onCheckTypedAnswer = {},
+                )
+            }
+        }
+    }
+
+    @Test
     fun studyClozeQuestion() {
         paparazzi.snapshot {
             RecallDeckTheme {
@@ -443,6 +484,48 @@ class ScreenshotTest {
                     onSubjectSelect = {},
                     onCategorySelect = {},
                     onSave = {},
+                )
+            }
+        }
+    }
+
+    private val statsSnapshot = run {
+        val start = LocalDate.of(2026, 4, 15)
+        StatsSnapshot(
+            currentStreakDays = 7,
+            heatmap = List(84) { i -> HeatmapDay(start.plusDays(i.toLong()), (i * 7) % 11) },
+            forecast = List(31) { i -> ForecastDay(start.plusDays(84L + i), ((i * 5) % 17)) },
+            retentionPercent = 87.5,
+            subjectBreakdown = listOf(
+                SubjectBreakdown(
+                    subjectId = 1,
+                    subjectName = "Biology",
+                    stateCounts = mapOf(
+                        CardState.NEW to 10,
+                        CardState.LEARNING to 4,
+                        CardState.REVIEW to 28,
+                        CardState.SUSPENDED to 2,
+                    ),
+                ),
+                SubjectBreakdown(
+                    subjectId = 2,
+                    subjectName = "Organic Chemistry",
+                    stateCounts = mapOf(
+                        CardState.NEW to 20,
+                        CardState.REVIEW to 6,
+                    ),
+                ),
+            ),
+        )
+    }
+
+    @Test
+    fun statsDark() {
+        paparazzi.snapshot {
+            RecallDeckTheme(darkTheme = true) {
+                StatsScreen(
+                    state = StatsUiState(loading = false, snapshot = statsSnapshot),
+                    onBack = {},
                 )
             }
         }
