@@ -285,6 +285,7 @@ class ScreenshotTest {
                     onBack = {},
                     onReveal = {},
                     onRevealHint = {},
+                    onRevealElaboration = {},
                     onGrade = {},
                     onUndo = {},
                     onSuspend = {},
@@ -311,6 +312,35 @@ class ScreenshotTest {
                     onBack = {},
                     onReveal = {},
                     onRevealHint = {},
+                    onRevealElaboration = {},
+                    onGrade = {},
+                    onUndo = {},
+                    onSuspend = {},
+                    onSkip = {},
+                    onEditCard = {},
+                    onOpenSettings = {},
+                    onTypedInputChange = {},
+                    onCheckTypedAnswer = {},
+                )
+            }
+        }
+    }
+
+    @Test
+    fun studyAnswerElaborationExpanded() {
+        paparazzi.snapshot {
+            RecallDeckTheme {
+                StudyScreen(
+                    state = studyBase.copy(
+                        revealed = true,
+                        mnemonic = "Mighty mito makes energy",
+                        elaboration = "Site of aerobic respiration and ATP production.",
+                        elaborationRevealed = true,
+                    ),
+                    onBack = {},
+                    onReveal = {},
+                    onRevealHint = {},
+                    onRevealElaboration = {},
                     onGrade = {},
                     onUndo = {},
                     onSuspend = {},
@@ -337,6 +367,7 @@ class ScreenshotTest {
                     onBack = {},
                     onReveal = {},
                     onRevealHint = {},
+                    onRevealElaboration = {},
                     onGrade = {},
                     onUndo = {},
                     onSuspend = {},
@@ -364,6 +395,7 @@ class ScreenshotTest {
                     onBack = {},
                     onReveal = {},
                     onRevealHint = {},
+                    onRevealElaboration = {},
                     onGrade = {},
                     onUndo = {},
                     onSuspend = {},
@@ -390,6 +422,7 @@ class ScreenshotTest {
                     onBack = {},
                     onReveal = {},
                     onRevealHint = {},
+                    onRevealElaboration = {},
                     onGrade = {},
                     onUndo = {},
                     onSuspend = {},
@@ -418,6 +451,7 @@ class ScreenshotTest {
                     onBack = {},
                     onReveal = {},
                     onRevealHint = {},
+                    onRevealElaboration = {},
                     onGrade = {},
                     onUndo = {},
                     onSuspend = {},
@@ -445,6 +479,7 @@ class ScreenshotTest {
                     onBack = {},
                     onReveal = {},
                     onRevealHint = {},
+                    onRevealElaboration = {},
                     onGrade = {},
                     onUndo = {},
                     onSuspend = {},
@@ -468,7 +503,7 @@ class ScreenshotTest {
                     onPickFile = {},
                     onPresetChange = {},
                     onToggleCard = { _ -> },
-                    onEditCard = { _, _, _ -> },
+                    onEditCard = { _, _, _, _ -> },
                     onSubjectSelect = {},
                     onCategorySelect = {},
                     onSave = {},
@@ -486,7 +521,11 @@ class ScreenshotTest {
                         fileName = "biology-notes.pdf",
                         preset = ImportPreset.QA_PAIRS,
                         cards = listOf(
-                            ParsedCard("What is the powerhouse of the cell?", "Mitochondria"),
+                            ParsedCard(
+                                "What is the powerhouse of the cell?",
+                                "Mitochondria",
+                                elaboration = "Site of aerobic respiration and ATP production.",
+                            ),
                             ParsedCard("Define osmosis", "Diffusion of water across a membrane"),
                             ParsedCard("What does DNA stand for?", "Deoxyribonucleic acid", enabled = false),
                         ),
@@ -501,7 +540,7 @@ class ScreenshotTest {
                     onPickFile = {},
                     onPresetChange = {},
                     onToggleCard = { _ -> },
-                    onEditCard = { _, _, _ -> },
+                    onEditCard = { _, _, _, _ -> },
                     onSubjectSelect = {},
                     onCategorySelect = {},
                     onSave = {},

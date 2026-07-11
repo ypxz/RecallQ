@@ -140,7 +140,7 @@ fun CardEditorScreen(
             OutlinedTextField(
                 value = state.elaboration,
                 onValueChange = onElaborationChange,
-                label = { Text("Elaboration (optional)") },
+                label = { Text("Detailed explanation (optional)") },
                 modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
                 minLines = 2,
             )

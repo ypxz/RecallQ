@@ -216,6 +216,7 @@ fun RecallDeckNavHost(navController: NavHostController) {
                 onBack = { navController.popBackStack() },
                 onReveal = viewModel::reveal,
                 onRevealHint = viewModel::revealHint,
+                onRevealElaboration = viewModel::revealElaboration,
                 onGrade = viewModel::grade,
                 onUndo = viewModel::undo,
                 onSuspend = viewModel::suspendCurrent,

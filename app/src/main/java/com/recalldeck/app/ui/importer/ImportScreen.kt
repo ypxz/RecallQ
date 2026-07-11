@@ -48,7 +48,7 @@ fun ImportScreen(
     onPickFile: () -> Unit,
     onPresetChange: (ImportPreset) -> Unit,
     onToggleCard: (Int) -> Unit,
-    onEditCard: (Int, String, String) -> Unit,
+    onEditCard: (Int, String, String, String) -> Unit,
     onSubjectSelect: (Long) -> Unit,
     onCategorySelect: (Long) -> Unit,
     onSave: () -> Unit,
@@ -162,6 +162,7 @@ fun ImportScreen(
                                     if (editingIndex == index) {
                                         var question by remember { mutableStateOf(card.question) }
                                         var answer by remember { mutableStateOf(card.answer) }
+                                        var elaboration by remember { mutableStateOf(card.elaboration.orEmpty()) }
                                         OutlinedTextField(
                                             value = question,
                                             onValueChange = { question = it },
@@ -175,9 +176,16 @@ fun ImportScreen(
                                             label = { Text("Answer") },
                                             modifier = Modifier.fillMaxWidth(),
                                         )
+                                        Spacer(Modifier.height(4.dp))
+                                        OutlinedTextField(
+                                            value = elaboration,
+                                            onValueChange = { elaboration = it },
+                                            label = { Text("Detailed explanation (optional)") },
+                                            modifier = Modifier.fillMaxWidth(),
+                                        )
                                         Row {
                                             TextButton(onClick = {
-                                                onEditCard(index, question, answer)
+                                                onEditCard(index, question, answer, elaboration)
                                                 editingIndex = null
                                             }) { Text("Done") }
                                             TextButton(onClick = { editingIndex = null }) {
@@ -191,6 +199,13 @@ fun ImportScreen(
                                             style = MaterialTheme.typography.bodyMedium,
                                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                                         )
+                                        if (!card.elaboration.isNullOrBlank()) {
+                                            Text(
+                                                card.elaboration,
+                                                style = MaterialTheme.typography.bodySmall,
+                                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                            )
+                                        }
                                     }
                                 }
                                 if (editingIndex != index) {
