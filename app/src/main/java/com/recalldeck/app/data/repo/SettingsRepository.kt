@@ -28,6 +28,8 @@ data class AppSettings(
     val newGoodDelayMinutes: Int = 10,
     /** Minutes until a LEARNING card graded Hard comes back. */
     val learningHardDelayMinutes: Int = 10,
+    /** If true, an Again card returns at the end of the session instead of ~10 cards later. */
+    val againAtSessionEnd: Boolean = false,
 )
 
 class SettingsRepository(private val dataStore: DataStore<Preferences>) {
@@ -45,6 +47,7 @@ class SettingsRepository(private val dataStore: DataStore<Preferences>) {
             newHardDelayMinutes = prefs[NEW_HARD_DELAY_MINUTES] ?: 5,
             newGoodDelayMinutes = prefs[NEW_GOOD_DELAY_MINUTES] ?: 10,
             learningHardDelayMinutes = prefs[LEARNING_HARD_DELAY_MINUTES] ?: 10,
+            againAtSessionEnd = prefs[AGAIN_AT_SESSION_END] ?: false,
         )
     }
 
@@ -76,6 +79,9 @@ class SettingsRepository(private val dataStore: DataStore<Preferences>) {
     suspend fun setLearningHardDelayMinutes(value: Int) =
         dataStore.edit { it[LEARNING_HARD_DELAY_MINUTES] = value }
 
+    suspend fun setAgainAtSessionEnd(value: Boolean) =
+        dataStore.edit { it[AGAIN_AT_SESSION_END] = value }
+
     companion object {
         private val RETENTION_TARGET = doublePreferencesKey("retention_target")
         private val NEW_PER_DAY = intPreferencesKey("new_per_day")
@@ -88,5 +94,6 @@ class SettingsRepository(private val dataStore: DataStore<Preferences>) {
         private val NEW_HARD_DELAY_MINUTES = intPreferencesKey("new_hard_delay_minutes")
         private val NEW_GOOD_DELAY_MINUTES = intPreferencesKey("new_good_delay_minutes")
         private val LEARNING_HARD_DELAY_MINUTES = intPreferencesKey("learning_hard_delay_minutes")
+        private val AGAIN_AT_SESSION_END = booleanPreferencesKey("again_at_session_end")
     }
 }

@@ -69,6 +69,9 @@ class SettingsViewModel(
     fun setLearningHardDelayMinutes(value: Int) =
         launchUpdate { settingsRepo.setLearningHardDelayMinutes(value.coerceIn(1, 1440)) }
 
+    fun setAgainAtSessionEnd(value: Boolean) =
+        launchUpdate { settingsRepo.setAgainAtSessionEnd(value) }
+
     fun setReminderEnabled(value: Boolean) {
         viewModelScope.launch {
             settingsRepo.setReminderEnabled(value)

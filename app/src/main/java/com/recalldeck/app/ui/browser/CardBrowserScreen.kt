@@ -44,6 +44,7 @@ import com.recalldeck.app.data.db.CardEntity
 import com.recalldeck.app.data.db.CardState
 import com.recalldeck.app.data.db.CategoryEntity
 import com.recalldeck.app.ui.common.EmptyState
+import com.recalldeck.app.ui.common.displayLabel
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
@@ -124,7 +125,7 @@ fun CardBrowserScreen(
                     FilterChip(
                         selected = state.stateFilter == cardState,
                         onClick = { onStateFilterChange(cardState) },
-                        label = { Text(cardState.name.lowercase().replaceFirstChar { it.uppercase() }) },
+                        label = { Text(cardState.displayLabel()) },
                         modifier = Modifier.padding(end = 8.dp),
                     )
                 }

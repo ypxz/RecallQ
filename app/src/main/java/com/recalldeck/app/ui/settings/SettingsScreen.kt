@@ -54,6 +54,7 @@ fun SettingsScreen(
     onNewHardDelayChange: (Int) -> Unit,
     onNewGoodDelayChange: (Int) -> Unit,
     onLearningHardDelayChange: (Int) -> Unit,
+    onAgainAtSessionEndChange: (Boolean) -> Unit,
     onReminderEnabledChange: (Boolean) -> Unit,
     onPickReminderTime: () -> Unit,
     onExportBackup: () -> Unit,
@@ -120,10 +121,16 @@ fun SettingsScreen(
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             Spacer(Modifier.height(4.dp))
-            StepperRow("Again", state.settings.againDelayMinutes, onAgainDelayChange)
-            StepperRow("Hard (new card)", state.settings.newHardDelayMinutes, onNewHardDelayChange)
-            StepperRow("Good (new card)", state.settings.newGoodDelayMinutes, onNewGoodDelayChange)
-            StepperRow("Hard (learning card)", state.settings.learningHardDelayMinutes, onLearningHardDelayChange)
+            StepperRow("Don't know", state.settings.againDelayMinutes, onAgainDelayChange)
+            StepperRow("Kind of (new card)", state.settings.newHardDelayMinutes, onNewHardDelayChange)
+            StepperRow("Know it (new card)", state.settings.newGoodDelayMinutes, onNewGoodDelayChange)
+            StepperRow("Kind of (learning card)", state.settings.learningHardDelayMinutes, onLearningHardDelayChange)
+            ToggleRow(
+                title = "\"Don't know\" cards return at end of session",
+                subtitle = "Instead of about 10 cards later in the same session",
+                checked = state.settings.againAtSessionEnd,
+                onCheckedChange = onAgainAtSessionEndChange,
+            )
             ToggleRow(
                 title = "Auto-suspend mastered cards",
                 subtitle = "Suspend cards after 3 consecutive good reviews at 21+ day intervals",
