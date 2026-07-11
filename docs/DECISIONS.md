@@ -38,6 +38,11 @@ Ambiguous spec details resolved with the simplest reasonable choice.
   boolean extra `com.recalldeck.app.OPEN_DUE_REVIEW`; Phase 3 UI reads this extra to navigate
   to the due review flow (runtime POST_NOTIFICATIONS request is also Phase 3).
 
+- **Configurable learning steps**: the short (sub-day) delays are user-configurable in
+  Settings (Again for all states, Hard/Good for NEW, Hard for LEARNING; 1 min–24 h).
+  Good/Easy graduation intervals stay FSRS-driven — fixed day intervals there would defeat
+  the scheduler. Defaults match the previous fixed values (3/5/10/10 min).
+
 ## SRS (srs/ package)
 
 - **FSRS parity vectors**: the reference repo (open-spaced-repetition/FSRS-Kotlin) ships no

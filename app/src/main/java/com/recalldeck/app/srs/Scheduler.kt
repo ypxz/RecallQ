@@ -36,11 +36,6 @@ object Scheduler {
     private const val MINUTE_MS = 60_000L
     private const val DAY_MS = 86_400_000L
 
-    private const val AGAIN_DELAY_MS = 3 * MINUTE_MS
-    private const val NEW_HARD_DELAY_MS = 5 * MINUTE_MS
-    private const val NEW_GOOD_DELAY_MS = 10 * MINUTE_MS
-    private const val LEARNING_HARD_DELAY_MS = 10 * MINUTE_MS
-
     /** Consecutive rating >= 3 reviews required for mastery. */
     const val MASTERY_STREAK = 3
 
@@ -104,9 +99,9 @@ object Scheduler {
         val fsrs = Fsrs(requestRetention = settings.retentionTarget)
         return when (card.state) {
             CardState.NEW -> mapOf(
-                Grade.AGAIN to minutesPreview(AGAIN_DELAY_MS),
-                Grade.HARD to minutesPreview(NEW_HARD_DELAY_MS),
-                Grade.GOOD to minutesPreview(NEW_GOOD_DELAY_MS),
+                Grade.AGAIN to minutesPreview(settings.againDelayMinutes * MINUTE_MS),
+                Grade.HARD to minutesPreview(settings.newHardDelayMinutes * MINUTE_MS),
+                Grade.GOOD to minutesPreview(settings.newGoodDelayMinutes * MINUTE_MS),
                 Grade.EASY to daysPreview(1),
             )
 
@@ -115,8 +110,8 @@ object Scheduler {
                 val easyRaw = fsrs.nextIntervalDays(memoryFor(fsrs, card, Grade.EASY).stability)
                 val easy = max(easyRaw, good + 1)
                 mapOf(
-                    Grade.AGAIN to minutesPreview(AGAIN_DELAY_MS),
-                    Grade.HARD to minutesPreview(LEARNING_HARD_DELAY_MS),
+                    Grade.AGAIN to minutesPreview(settings.againDelayMinutes * MINUTE_MS),
+                    Grade.HARD to minutesPreview(settings.learningHardDelayMinutes * MINUTE_MS),
                     Grade.GOOD to daysPreview(good),
                     Grade.EASY to daysPreview(easy),
                 )
@@ -131,7 +126,7 @@ object Scheduler {
                 good = max(good, hard + 1)
                 easy = max(easy, good + 1)
                 mapOf(
-                    Grade.AGAIN to minutesPreview(AGAIN_DELAY_MS),
+                    Grade.AGAIN to minutesPreview(settings.againDelayMinutes * MINUTE_MS),
                     Grade.HARD to daysPreview(hard),
                     Grade.GOOD to daysPreview(good),
                     Grade.EASY to daysPreview(easy),

@@ -57,6 +57,18 @@ class SettingsViewModel(
     fun setAutoSuspendMastered(value: Boolean) =
         launchUpdate { settingsRepo.setAutoSuspendMastered(value) }
 
+    fun setAgainDelayMinutes(value: Int) =
+        launchUpdate { settingsRepo.setAgainDelayMinutes(value.coerceIn(1, 1440)) }
+
+    fun setNewHardDelayMinutes(value: Int) =
+        launchUpdate { settingsRepo.setNewHardDelayMinutes(value.coerceIn(1, 1440)) }
+
+    fun setNewGoodDelayMinutes(value: Int) =
+        launchUpdate { settingsRepo.setNewGoodDelayMinutes(value.coerceIn(1, 1440)) }
+
+    fun setLearningHardDelayMinutes(value: Int) =
+        launchUpdate { settingsRepo.setLearningHardDelayMinutes(value.coerceIn(1, 1440)) }
+
     fun setReminderEnabled(value: Boolean) {
         viewModelScope.launch {
             settingsRepo.setReminderEnabled(value)

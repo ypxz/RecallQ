@@ -167,6 +167,28 @@ class SchedulerTest {
     }
 
     @Test
+    fun `custom learning steps drive previews and due times`() {
+        val custom = settings.copy(
+            againDelayMinutes = 1,
+            newHardDelayMinutes = 15,
+            newGoodDelayMinutes = 30,
+            learningHardDelayMinutes = 45,
+        )
+        val newPreviews = Scheduler.previewIntervals(card(), now, custom)
+        assertEquals(1 * 60_000L, newPreviews.getValue(Grade.AGAIN).dueInMillis)
+        assertEquals(15 * 60_000L, newPreviews.getValue(Grade.HARD).dueInMillis)
+        assertEquals(30 * 60_000L, newPreviews.getValue(Grade.GOOD).dueInMillis)
+        assertEquals("30 min", newPreviews.getValue(Grade.GOOD).caption)
+
+        val learning = card(state = CardState.LEARNING, stability = 1.0, difficulty = 5.0)
+        val learningPreviews = Scheduler.previewIntervals(learning, now, custom)
+        assertEquals(45 * 60_000L, learningPreviews.getValue(Grade.HARD).dueInMillis)
+
+        val result = Scheduler.grade(card(), Grade.AGAIN, now, custom)
+        assertEquals(now + 60_000L, result.updatedCard.dueAt)
+    }
+
+    @Test
     fun `higher retention target shortens intervals`() {
         val review = card(
             state = CardState.REVIEW, stability = 10.0, difficulty = 5.0,
