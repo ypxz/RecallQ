@@ -1,7 +1,8 @@
 package com.recalldeck.app.importer
 
 /**
- * Parser for `question;answer` CSV files. Supports `;` and `,` delimiters
+ * Parser for `question;answer` CSV files with an optional third
+ * `explanation` column. Supports `;` and `,` delimiters
  * (auto-detected or explicit), RFC-4180 style double-quote quoting with
  * escaped quotes (`""`), and an optional header row.
  */
@@ -33,7 +34,8 @@ object CsvParser {
             val answer = row[1].trim()
             if (question.isEmpty() || answer.isEmpty()) return@forEachIndexed
             if (index == 0 && isHeader(question, answer)) return@forEachIndexed
-            cards += ParsedCard(question, answer, sourceHint = "row ${index + 1}")
+            val elaboration = row.getOrNull(2)?.trim()?.takeIf { it.isNotEmpty() }
+            cards += ParsedCard(question, answer, elaboration = elaboration, sourceHint = "row ${index + 1}")
         }
 
         return if (cards.isEmpty()) {

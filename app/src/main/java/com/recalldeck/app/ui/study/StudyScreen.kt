@@ -57,6 +57,7 @@ fun StudyScreen(
     onBack: () -> Unit,
     onReveal: () -> Unit,
     onRevealHint: () -> Unit,
+    onRevealElaboration: () -> Unit,
     onGrade: (Grade) -> Unit,
     onUndo: () -> Unit,
     onSuspend: () -> Unit,
@@ -139,6 +140,7 @@ fun StudyScreen(
                 state = state,
                 onReveal = onReveal,
                 onRevealHint = onRevealHint,
+                onRevealElaboration = onRevealElaboration,
                 onGrade = onGrade,
                 onTypedInputChange = onTypedInputChange,
                 onCheckTypedAnswer = onCheckTypedAnswer,
@@ -153,6 +155,7 @@ private fun CardStudyContent(
     state: StudyUiState,
     onReveal: () -> Unit,
     onRevealHint: () -> Unit,
+    onRevealElaboration: () -> Unit,
     onGrade: (Grade) -> Unit,
     onTypedInputChange: (String) -> Unit,
     onCheckTypedAnswer: () -> Unit,
@@ -179,7 +182,7 @@ private fun CardStudyContent(
                     modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 32.dp),
                     horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
-                    QuestionAnswerContent(state, onRevealHint)
+                    QuestionAnswerContent(state, onRevealHint, onRevealElaboration)
                 }
             }
         }
@@ -207,7 +210,11 @@ private fun CardStudyContent(
 }
 
 @Composable
-private fun QuestionAnswerContent(state: StudyUiState, onRevealHint: () -> Unit) {
+private fun QuestionAnswerContent(
+    state: StudyUiState,
+    onRevealHint: () -> Unit,
+    onRevealElaboration: () -> Unit,
+) {
     Text(
         state.question,
         style = MaterialTheme.typography.headlineSmall,
@@ -265,14 +272,22 @@ private fun QuestionAnswerContent(state: StudyUiState, onRevealHint: () -> Unit)
                     textAlign = TextAlign.Center,
                 )
             }
-            if (state.elaboration != null) {
-                Spacer(Modifier.height(8.dp))
-                Text(
-                    state.elaboration,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    textAlign = TextAlign.Center,
-                )
+            if (!state.elaboration.isNullOrBlank()) {
+                Spacer(Modifier.height(16.dp))
+                if (!state.elaborationRevealed) {
+                    AssistChip(onClick = onRevealElaboration, label = { Text("In detail") })
+                }
+                AnimatedVisibility(
+                    visible = state.elaborationRevealed,
+                    enter = fadeIn() + expandVertically(),
+                ) {
+                    Text(
+                        state.elaboration,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        textAlign = TextAlign.Center,
+                    )
+                }
             }
         }
     }

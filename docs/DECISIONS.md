@@ -110,3 +110,14 @@ Ambiguous spec details resolved with the simplest reasonable choice.
   card's bucket. Learning-step settings reuse the same names, and the browser shows a
   caption with the current minute intervals. Internal enum names and the DB schema are
   unchanged.
+- **In-detail explanation**: after the answer is revealed, a card's elaboration is no
+  longer shown automatically; an "In detail" chip appears (only when the elaboration is
+  non-blank) and expands the text on tap. Applies identically in cram and type-answer
+  modes. The expanded state resets per card. Mnemonic display is unchanged.
+- **CSV explanation column**: the CSV import format gains an optional third column
+  (`question;answer;explanation`) mapped to the card's existing `elaboration` field; a
+  blank third column means no elaboration. Two-column files keep working unchanged.
+  CSV export now always writes the three-column header `question;answer;explanation`
+  with an empty third field for cards without an elaboration. Extra columns beyond the
+  third are still ignored.
+>>>>>>> origin/main
