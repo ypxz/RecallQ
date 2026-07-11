@@ -50,6 +50,10 @@ fun SettingsScreen(
     onNewPerDayChange: (Int) -> Unit,
     onThemeModeChange: (ThemeMode) -> Unit,
     onAutoSuspendChange: (Boolean) -> Unit,
+    onAgainDelayChange: (Int) -> Unit,
+    onNewHardDelayChange: (Int) -> Unit,
+    onNewGoodDelayChange: (Int) -> Unit,
+    onLearningHardDelayChange: (Int) -> Unit,
     onReminderEnabledChange: (Boolean) -> Unit,
     onPickReminderTime: () -> Unit,
     onExportBackup: () -> Unit,
@@ -108,6 +112,18 @@ fun SettingsScreen(
                 onValueChange = { onNewPerDayChange(it.roundToInt()) },
                 valueRange = 0f..100f,
             )
+            Spacer(Modifier.height(8.dp))
+            Text("Learning steps", style = MaterialTheme.typography.bodyLarge)
+            Text(
+                "How soon a card comes back after each grade (before it graduates to day intervals)",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Spacer(Modifier.height(4.dp))
+            StepperRow("Again", state.settings.againDelayMinutes, onAgainDelayChange)
+            StepperRow("Hard (new card)", state.settings.newHardDelayMinutes, onNewHardDelayChange)
+            StepperRow("Good (new card)", state.settings.newGoodDelayMinutes, onNewGoodDelayChange)
+            StepperRow("Hard (learning card)", state.settings.learningHardDelayMinutes, onLearningHardDelayChange)
             ToggleRow(
                 title = "Auto-suspend mastered cards",
                 subtitle = "Suspend cards after 3 consecutive good reviews at 21+ day intervals",
@@ -228,6 +244,36 @@ private fun CsvExportButton(state: SettingsUiState, onExportCsv: (Long) -> Unit)
             }
         }
     }
+}
+
+@Composable
+private fun StepperRow(label: String, minutes: Int, onChange: (Int) -> Unit) {
+    Row(
+        modifier = Modifier.fillMaxWidth().padding(vertical = 2.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(label, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f))
+        TextButton(onClick = { onChange(minutes - stepFor(minutes - 1)) }, enabled = minutes > 1) { Text("\u2212") }
+        Text(
+            formatMinutes(minutes),
+            style = MaterialTheme.typography.bodyLarge,
+            modifier = Modifier.padding(horizontal = 4.dp),
+        )
+        TextButton(onClick = { onChange(minutes + stepFor(minutes)) }, enabled = minutes < 1440) { Text("+") }
+    }
+}
+
+/** Step size grows with the value: 1 min below 10, 5 min below 60, 30 min beyond. */
+private fun stepFor(minutes: Int): Int = when {
+    minutes < 10 -> 1
+    minutes < 60 -> 5
+    else -> 30
+}
+
+private fun formatMinutes(minutes: Int): String = when {
+    minutes < 60 -> "$minutes min"
+    minutes % 60 == 0 -> "${minutes / 60} h"
+    else -> "${minutes / 60} h ${minutes % 60} min"
 }
 
 @Composable

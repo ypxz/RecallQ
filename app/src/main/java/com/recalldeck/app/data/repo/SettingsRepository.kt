@@ -20,6 +20,14 @@ data class AppSettings(
     val reminderMinute: Int = 0,
     val themeMode: ThemeMode = ThemeMode.SYSTEM,
     val autoSuspendMastered: Boolean = false,
+    /** Minutes until a card graded Again comes back (any state). */
+    val againDelayMinutes: Int = 3,
+    /** Minutes until a NEW card graded Hard comes back. */
+    val newHardDelayMinutes: Int = 5,
+    /** Minutes until a NEW card graded Good comes back. */
+    val newGoodDelayMinutes: Int = 10,
+    /** Minutes until a LEARNING card graded Hard comes back. */
+    val learningHardDelayMinutes: Int = 10,
 )
 
 class SettingsRepository(private val dataStore: DataStore<Preferences>) {
@@ -33,6 +41,10 @@ class SettingsRepository(private val dataStore: DataStore<Preferences>) {
             reminderMinute = prefs[REMINDER_MINUTE] ?: 0,
             themeMode = prefs[THEME_MODE]?.let { ThemeMode.valueOf(it) } ?: ThemeMode.SYSTEM,
             autoSuspendMastered = prefs[AUTO_SUSPEND_MASTERED] ?: false,
+            againDelayMinutes = prefs[AGAIN_DELAY_MINUTES] ?: 3,
+            newHardDelayMinutes = prefs[NEW_HARD_DELAY_MINUTES] ?: 5,
+            newGoodDelayMinutes = prefs[NEW_GOOD_DELAY_MINUTES] ?: 10,
+            learningHardDelayMinutes = prefs[LEARNING_HARD_DELAY_MINUTES] ?: 10,
         )
     }
 
@@ -52,6 +64,18 @@ class SettingsRepository(private val dataStore: DataStore<Preferences>) {
     suspend fun setAutoSuspendMastered(value: Boolean) =
         dataStore.edit { it[AUTO_SUSPEND_MASTERED] = value }
 
+    suspend fun setAgainDelayMinutes(value: Int) =
+        dataStore.edit { it[AGAIN_DELAY_MINUTES] = value }
+
+    suspend fun setNewHardDelayMinutes(value: Int) =
+        dataStore.edit { it[NEW_HARD_DELAY_MINUTES] = value }
+
+    suspend fun setNewGoodDelayMinutes(value: Int) =
+        dataStore.edit { it[NEW_GOOD_DELAY_MINUTES] = value }
+
+    suspend fun setLearningHardDelayMinutes(value: Int) =
+        dataStore.edit { it[LEARNING_HARD_DELAY_MINUTES] = value }
+
     companion object {
         private val RETENTION_TARGET = doublePreferencesKey("retention_target")
         private val NEW_PER_DAY = intPreferencesKey("new_per_day")
@@ -60,5 +84,9 @@ class SettingsRepository(private val dataStore: DataStore<Preferences>) {
         private val REMINDER_MINUTE = intPreferencesKey("reminder_minute")
         private val THEME_MODE = stringPreferencesKey("theme_mode")
         private val AUTO_SUSPEND_MASTERED = booleanPreferencesKey("auto_suspend_mastered")
+        private val AGAIN_DELAY_MINUTES = intPreferencesKey("again_delay_minutes")
+        private val NEW_HARD_DELAY_MINUTES = intPreferencesKey("new_hard_delay_minutes")
+        private val NEW_GOOD_DELAY_MINUTES = intPreferencesKey("new_good_delay_minutes")
+        private val LEARNING_HARD_DELAY_MINUTES = intPreferencesKey("learning_hard_delay_minutes")
     }
 }

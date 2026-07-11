@@ -290,6 +290,10 @@ fun RecallDeckNavHost(navController: NavHostController) {
                 onNewPerDayChange = viewModel::setNewPerDay,
                 onThemeModeChange = viewModel::setThemeMode,
                 onAutoSuspendChange = viewModel::setAutoSuspendMastered,
+                onAgainDelayChange = viewModel::setAgainDelayMinutes,
+                onNewHardDelayChange = viewModel::setNewHardDelayMinutes,
+                onNewGoodDelayChange = viewModel::setNewGoodDelayMinutes,
+                onLearningHardDelayChange = viewModel::setLearningHardDelayMinutes,
                 onReminderEnabledChange = { enabled ->
                     if (enabled && android.os.Build.VERSION.SDK_INT >= 33) {
                         notificationPermissionLauncher.launch(
