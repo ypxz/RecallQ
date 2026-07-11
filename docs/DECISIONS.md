@@ -91,3 +91,14 @@ Ambiguous spec details resolved with the simplest reasonable choice.
 - **Study route args**: study config (scope, mode, count, order, cram, type-answer) is
   passed via navigation query args rather than a shared ViewModel, keeping destinations
   deep-linkable and state restorable.
+- **User-facing state names**: scheduling states are shown as "Not studied" (NEW),
+  "Kind of know" (LEARNING), "Know" (REVIEW), and "Never ask" (SUSPENDED) so they match the
+  grade buttons ("Don't know" / "Kind of" / "Know it" / "Know 100%"). Enum names and the
+  DB schema are unchanged.
+- **Grade button order**: easiest ("Know 100%") on the left through "Don't know" on the
+  right, per user request.
+- **Skip in study**: moves the current card to the end of the session queue without grading
+  (no scheduling change, not undoable since nothing was persisted).
+- **Again-at-session-end** (setting, default off): "Don't know" re-inserts the card at the
+  end of the current session queue instead of ~10 positions later; the stored dueAt delay
+  is unchanged.

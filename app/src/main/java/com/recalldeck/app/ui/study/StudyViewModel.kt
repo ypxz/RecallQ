@@ -57,6 +57,7 @@ data class StudyUiState(
     val hintRevealed: Boolean = false,
     /** Grade button captions, e.g. AGAIN -> "3 min". */
     val intervalCaptions: Map<Grade, String> = emptyMap(),
+    val currentCardId: Long? = null,
     val position: Int = 0,
     val total: Int = 0,
     val canUndo: Boolean = false,
@@ -134,7 +135,7 @@ class StudyViewModel(
                 persistedCard = persistedCard.copy(state = CardState.SUSPENDED)
                 studyRepo.updateCard(persistedCard)
             }
-            session = session.afterGrade(result, grade, logId)
+            session = session.afterGrade(result, grade, logId, settings.againAtSessionEnd)
             gradeHistory.add(grade)
             _uiState.update { it.copy(summary = summaryFrom(gradeHistory)) }
             showCurrent()
@@ -148,6 +149,24 @@ class StudyViewModel(
             session = restored
             if (gradeHistory.isNotEmpty()) gradeHistory.removeAt(gradeHistory.lastIndex)
             _uiState.update { it.copy(finished = false, summary = summaryFrom(gradeHistory)) }
+            showCurrent()
+        }
+    }
+
+    /** Moves the current card to the end of the session queue without grading it. */
+    fun skipCurrent() {
+        session = session.skipCurrent()
+        showCurrent()
+    }
+
+    /** Re-reads the current card from the database (e.g. after it was edited). */
+    fun refreshCurrentCard() {
+        val card = session.currentCard ?: return
+        viewModelScope.launch {
+            val fresh = studyRepo.getCard(card.id) ?: return@launch
+            session = session.copy(
+                queue = session.queue.map { if (it.id == fresh.id) fresh else it },
+            )
             showCurrent()
         }
     }
@@ -187,6 +206,7 @@ class StudyViewModel(
                 mnemonic = card.mnemonic,
                 elaboration = card.elaboration,
                 isCloze = card.type == CardType.CLOZE,
+                currentCardId = card.id,
                 revealed = false,
                 hintRevealed = false,
                 intervalCaptions = previews.mapValues { (_, v) -> v.caption },

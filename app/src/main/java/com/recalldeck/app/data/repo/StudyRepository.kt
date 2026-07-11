@@ -36,6 +36,8 @@ class StudyRepository(
         reviewLogDao.deleteById(reviewLogId)
     }
 
+    suspend fun getCard(id: Long): CardEntity? = cardDao.getById(id)
+
     suspend fun updateCard(card: CardEntity) = cardDao.update(card)
 
     suspend fun logsFor(cardId: Long): List<ReviewLogEntity> = reviewLogDao.getByCard(cardId)

@@ -150,7 +150,12 @@ data class StudySession(
      * log's id. If the grade was Again, the pre-grade card is re-inserted
      * ~[QueueBuilder.AGAIN_REQUEUE_OFFSET] positions later.
      */
-    fun afterGrade(result: GradeResult, grade: Grade, reviewLogId: Long): StudySession {
+    fun afterGrade(
+        result: GradeResult,
+        grade: Grade,
+        reviewLogId: Long,
+        againToEnd: Boolean = false,
+    ): StudySession {
         val step = SessionStep(
             previousCard = result.previousCard,
             reviewLogId = reviewLogId,
@@ -158,11 +163,20 @@ data class StudySession(
             previousPosition = position,
         )
         val nextQueue = if (grade == Grade.AGAIN) {
-            QueueBuilder.requeueAgain(queue, result.updatedCard, position + 1)
+            val offset = if (againToEnd) queue.size else QueueBuilder.AGAIN_REQUEUE_OFFSET
+            QueueBuilder.requeueAgain(queue, result.updatedCard, position + 1, offset)
         } else {
             queue
         }
         return copy(queue = nextQueue, position = position + 1, history = history + step)
+    }
+
+    /** Moves the current card to the end of the queue without grading it. */
+    fun skipCurrent(): StudySession {
+        val card = currentCard ?: return this
+        if (position >= queue.lastIndex) return this
+        val without = queue.filterIndexed { i, _ -> i != position }
+        return copy(queue = without + card)
     }
 
     /** Undoes the last grade, restoring queue position and returning what to persist. */

@@ -35,6 +35,7 @@ import com.recalldeck.app.data.stats.HeatmapDay
 import com.recalldeck.app.data.stats.StatsSnapshot
 import com.recalldeck.app.data.stats.SubjectBreakdown
 import com.recalldeck.app.ui.common.EmptyState
+import com.recalldeck.app.ui.common.displayLabel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -222,13 +223,8 @@ private fun SubjectBreakdownList(breakdown: List<SubjectBreakdown>) {
                 StateBar(subject.stateCounts)
                 Spacer(Modifier.height(2.dp))
                 Text(
-                    listOf(
-                        CardState.NEW to "new",
-                        CardState.LEARNING to "learning",
-                        CardState.REVIEW to "review",
-                        CardState.SUSPENDED to "suspended",
-                    ).joinToString(" · ") { (state, label) ->
-                        "${subject.stateCounts[state] ?: 0} $label"
+                    CardState.entries.joinToString(" · ") { state ->
+                        "${subject.stateCounts[state] ?: 0} ${state.displayLabel().lowercase()}"
                     },
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,

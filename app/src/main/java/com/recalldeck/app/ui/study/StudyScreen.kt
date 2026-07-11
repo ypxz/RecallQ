@@ -60,6 +60,9 @@ fun StudyScreen(
     onGrade: (Grade) -> Unit,
     onUndo: () -> Unit,
     onSuspend: () -> Unit,
+    onSkip: () -> Unit,
+    onEditCard: () -> Unit,
+    onOpenSettings: () -> Unit,
     onTypedInputChange: (String) -> Unit,
     onCheckTypedAnswer: () -> Unit,
 ) {
@@ -84,10 +87,31 @@ fun StudyScreen(
                         }
                         DropdownMenu(expanded = menuOpen, onDismissRequest = { menuOpen = false }) {
                             DropdownMenuItem(
+                                text = { Text("Edit this card") },
+                                onClick = {
+                                    menuOpen = false
+                                    onEditCard()
+                                },
+                            )
+                            DropdownMenuItem(
+                                text = { Text("Skip — ask at end of session") },
+                                onClick = {
+                                    menuOpen = false
+                                    onSkip()
+                                },
+                            )
+                            DropdownMenuItem(
                                 text = { Text("Never ask again") },
                                 onClick = {
                                     menuOpen = false
                                     onSuspend()
+                                },
+                            )
+                            DropdownMenuItem(
+                                text = { Text("Scheduling settings…") },
+                                onClick = {
+                                    menuOpen = false
+                                    onOpenSettings()
                                 },
                             )
                         }
@@ -260,10 +284,10 @@ private fun GradeButtons(captions: Map<Grade, String>, onGrade: (Grade) -> Unit)
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        GradeButton("Again", captions[Grade.AGAIN], { onGrade(Grade.AGAIN) }, Modifier.weight(1f), error = true)
-        GradeButton("Hard", captions[Grade.HARD], { onGrade(Grade.HARD) }, Modifier.weight(1f))
-        GradeButton("Good", captions[Grade.GOOD], { onGrade(Grade.GOOD) }, Modifier.weight(1f))
-        GradeButton("Easy", captions[Grade.EASY], { onGrade(Grade.EASY) }, Modifier.weight(1f))
+        GradeButton("Know 100%", captions[Grade.EASY], { onGrade(Grade.EASY) }, Modifier.weight(1f))
+        GradeButton("Know it", captions[Grade.GOOD], { onGrade(Grade.GOOD) }, Modifier.weight(1f))
+        GradeButton("Kind of", captions[Grade.HARD], { onGrade(Grade.HARD) }, Modifier.weight(1f))
+        GradeButton("Don't know", captions[Grade.AGAIN], { onGrade(Grade.AGAIN) }, Modifier.weight(1f), error = true)
     }
 }
 
@@ -314,10 +338,10 @@ private fun SessionSummary(summary: StudySummary, modifier: Modifier = Modifier)
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
         Spacer(Modifier.height(24.dp))
-        SummaryRow("Again", summary.again)
-        SummaryRow("Hard", summary.hard)
-        SummaryRow("Good", summary.good)
-        SummaryRow("Easy", summary.easy)
+        SummaryRow("Know 100%", summary.easy)
+        SummaryRow("Know it", summary.good)
+        SummaryRow("Kind of", summary.hard)
+        SummaryRow("Don't know", summary.again)
     }
 }
 

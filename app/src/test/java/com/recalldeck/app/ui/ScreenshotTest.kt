@@ -288,6 +288,9 @@ class ScreenshotTest {
                     onGrade = {},
                     onUndo = {},
                     onSuspend = {},
+                    onSkip = {},
+                    onEditCard = {},
+                    onOpenSettings = {},
                     onTypedInputChange = {},
                     onCheckTypedAnswer = {},
                 )
@@ -311,6 +314,9 @@ class ScreenshotTest {
                     onGrade = {},
                     onUndo = {},
                     onSuspend = {},
+                    onSkip = {},
+                    onEditCard = {},
+                    onOpenSettings = {},
                     onTypedInputChange = {},
                     onCheckTypedAnswer = {},
                 )
@@ -334,6 +340,9 @@ class ScreenshotTest {
                     onGrade = {},
                     onUndo = {},
                     onSuspend = {},
+                    onSkip = {},
+                    onEditCard = {},
+                    onOpenSettings = {},
                     onTypedInputChange = {},
                     onCheckTypedAnswer = {},
                 )
@@ -358,6 +367,9 @@ class ScreenshotTest {
                     onGrade = {},
                     onUndo = {},
                     onSuspend = {},
+                    onSkip = {},
+                    onEditCard = {},
+                    onOpenSettings = {},
                     onTypedInputChange = {},
                     onCheckTypedAnswer = {},
                 )
@@ -381,6 +393,9 @@ class ScreenshotTest {
                     onGrade = {},
                     onUndo = {},
                     onSuspend = {},
+                    onSkip = {},
+                    onEditCard = {},
+                    onOpenSettings = {},
                     onTypedInputChange = {},
                     onCheckTypedAnswer = {},
                 )
@@ -406,6 +421,9 @@ class ScreenshotTest {
                     onGrade = {},
                     onUndo = {},
                     onSuspend = {},
+                    onSkip = {},
+                    onEditCard = {},
+                    onOpenSettings = {},
                     onTypedInputChange = {},
                     onCheckTypedAnswer = {},
                 )
@@ -430,6 +448,9 @@ class ScreenshotTest {
                     onGrade = {},
                     onUndo = {},
                     onSuspend = {},
+                    onSkip = {},
+                    onEditCard = {},
+                    onOpenSettings = {},
                     onTypedInputChange = {},
                     onCheckTypedAnswer = {},
                 )
@@ -600,6 +621,7 @@ class ScreenshotTest {
                     onNewHardDelayChange = {},
                     onNewGoodDelayChange = {},
                     onLearningHardDelayChange = {},
+                    onAgainAtSessionEndChange = {},
                     onReminderEnabledChange = {},
                     onPickReminderTime = {},
                     onExportBackup = {},

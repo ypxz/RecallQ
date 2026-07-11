@@ -5,9 +5,13 @@ import android.provider.OpenableColumns
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLifecycleOwner
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
@@ -199,6 +203,14 @@ fun RecallDeckNavHost(navController: NavHostController) {
             )
             val viewModel: StudyViewModel = viewModel(factory = StudyViewModel.factory(config))
             val state by viewModel.uiState.collectAsState()
+            val lifecycleOwner = LocalLifecycleOwner.current
+            DisposableEffect(lifecycleOwner) {
+                val observer = LifecycleEventObserver { _, event ->
+                    if (event == Lifecycle.Event.ON_RESUME) viewModel.refreshCurrentCard()
+                }
+                lifecycleOwner.lifecycle.addObserver(observer)
+                onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
+            }
             StudyScreen(
                 state = state,
                 onBack = { navController.popBackStack() },
@@ -207,6 +219,13 @@ fun RecallDeckNavHost(navController: NavHostController) {
                 onGrade = viewModel::grade,
                 onUndo = viewModel::undo,
                 onSuspend = viewModel::suspendCurrent,
+                onSkip = viewModel::skipCurrent,
+                onEditCard = {
+                    state.currentCardId?.let {
+                        navController.navigate(Destinations.cardEditor(cardId = it))
+                    }
+                },
+                onOpenSettings = { navController.navigate(Destinations.SETTINGS) },
                 onTypedInputChange = viewModel::setTypedInput,
                 onCheckTypedAnswer = viewModel::checkTypedAnswer,
             )
@@ -294,6 +313,7 @@ fun RecallDeckNavHost(navController: NavHostController) {
                 onNewHardDelayChange = viewModel::setNewHardDelayMinutes,
                 onNewGoodDelayChange = viewModel::setNewGoodDelayMinutes,
                 onLearningHardDelayChange = viewModel::setLearningHardDelayMinutes,
+                onAgainAtSessionEndChange = viewModel::setAgainAtSessionEnd,
                 onReminderEnabledChange = { enabled ->
                     if (enabled && android.os.Build.VERSION.SDK_INT >= 33) {
                         notificationPermissionLauncher.launch(

@@ -200,6 +200,37 @@ class QueueBuilderTest {
     }
 
     @Test
+    fun `session again with againToEnd re-queues card at queue end`() {
+        val settings = AppSettings()
+        val queue = (1L..15L).map { card(it, state = CardState.REVIEW, lastReviewAt = now - dayMs) }
+        var session = StudySession(queue)
+        val first = session.currentCard!!
+
+        val result = Scheduler.grade(first, Grade.AGAIN, now, settings)
+        session = session.afterGrade(result, Grade.AGAIN, reviewLogId = 42, againToEnd = true)
+
+        assertEquals(16, session.queue.size)
+        assertEquals(first.id, session.queue.last().id)
+    }
+
+    @Test
+    fun `skip moves current card to queue end without grading`() {
+        val queue = (1L..5L).map { card(it) }
+        val session = StudySession(queue).skipCurrent()
+        assertEquals(2L, session.currentCard!!.id)
+        assertEquals(1L, session.queue.last().id)
+        assertEquals(5, session.queue.size)
+        assertTrue(session.history.isEmpty())
+    }
+
+    @Test
+    fun `skip on last card is a no-op`() {
+        val queue = (1L..3L).map { card(it) }
+        val session = StudySession(queue, position = 2)
+        assertEquals(session, session.skipCurrent())
+    }
+
+    @Test
     fun `session good advances without requeue`() {
         val settings = AppSettings()
         val queue = (1L..5L).map { card(it, state = CardState.REVIEW, lastReviewAt = now - dayMs) }
