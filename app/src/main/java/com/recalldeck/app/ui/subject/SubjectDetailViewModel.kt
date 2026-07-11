@@ -56,6 +56,15 @@ class SubjectDetailViewModel(
         viewModelScope.launch { repo.createCategory(subjectId, name.trim()) }
     }
 
+    fun renameCategory(category: CategoryEntity, name: String) {
+        if (name.isBlank()) return
+        viewModelScope.launch { repo.renameCategory(category, name.trim()) }
+    }
+
+    fun deleteCategory(category: CategoryEntity) {
+        viewModelScope.launch { repo.deleteCategory(category) }
+    }
+
     companion object {
         fun factory(subjectId: Long) = containerViewModelFactory {
             SubjectDetailViewModel(it.deckRepository, subjectId)

@@ -13,8 +13,13 @@ import com.recalldeck.app.ui.browser.CardBrowserUiState
 import com.recalldeck.app.ui.editor.CardEditorScreen
 import com.recalldeck.app.ui.editor.CardEditorUiState
 import com.recalldeck.app.ui.editor.ClozePreview
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Surface
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import com.recalldeck.app.ui.home.HomeScreen
 import com.recalldeck.app.ui.home.HomeUiState
+import com.recalldeck.app.ui.home.SubjectEditFields
 import com.recalldeck.app.data.repo.AppSettings
 import com.recalldeck.app.data.stats.ForecastDay
 import com.recalldeck.app.data.stats.HeatmapDay
@@ -75,6 +80,8 @@ class ScreenshotTest {
                 HomeScreen(
                     state = HomeUiState(subjects = subjects, dueCount = 12, streak = 4, loading = false),
                     onCreateSubject = {},
+                    onUpdateSubject = { _, _, _ -> },
+                    onDeleteSubject = {},
                     onSubjectClick = {},
                     onStudyAllDue = {},
                     onCustomStudy = {},
@@ -93,6 +100,8 @@ class ScreenshotTest {
                 HomeScreen(
                     state = HomeUiState(subjects = subjects, dueCount = 12, streak = 4, loading = false),
                     onCreateSubject = {},
+                    onUpdateSubject = { _, _, _ -> },
+                    onDeleteSubject = {},
                     onSubjectClick = {},
                     onStudyAllDue = {},
                     onCustomStudy = {},
@@ -111,6 +120,8 @@ class ScreenshotTest {
                 HomeScreen(
                     state = HomeUiState(loading = false),
                     onCreateSubject = {},
+                    onUpdateSubject = { _, _, _ -> },
+                    onDeleteSubject = {},
                     onSubjectClick = {},
                     onStudyAllDue = {},
                     onCustomStudy = {},
@@ -118,6 +129,23 @@ class ScreenshotTest {
                     onImportClick = {},
                     onSettingsClick = {},
                 )
+            }
+        }
+    }
+
+    @Test
+    fun subjectEditDialogContent() {
+        paparazzi.snapshot {
+            RecallDeckTheme {
+                Surface {
+                    SubjectEditFields(
+                        name = "Biology",
+                        colorHex = "#26A69A",
+                        onNameChange = {},
+                        onColorChange = {},
+                        modifier = Modifier.padding(24.dp),
+                    )
+                }
             }
         }
     }
@@ -145,6 +173,8 @@ class ScreenshotTest {
                     ),
                     onBack = {},
                     onCreateCategory = {},
+                    onRenameCategory = { _, _ -> },
+                    onDeleteCategory = {},
                     onCategoryClick = {},
                     onBrowseAll = {},
                     onStudy = {},

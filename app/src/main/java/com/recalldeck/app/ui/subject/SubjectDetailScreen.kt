@@ -1,6 +1,7 @@
 package com.recalldeck.app.ui.subject
 
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -34,19 +35,24 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.recalldeck.app.data.db.CategoryEntity
 import com.recalldeck.app.ui.common.EmptyState
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun SubjectDetailScreen(
     state: SubjectDetailUiState,
     onBack: () -> Unit,
     onCreateCategory: (String) -> Unit,
+    onRenameCategory: (CategoryEntity, String) -> Unit,
+    onDeleteCategory: (CategoryEntity) -> Unit,
     onCategoryClick: (Long) -> Unit,
     onBrowseAll: () -> Unit,
     onStudy: () -> Unit,
 ) {
     var showCreateDialog by remember { mutableStateOf(false) }
+    var categoryToEdit by remember { mutableStateOf<CategoryEntity?>(null) }
+    var categoryToDelete by remember { mutableStateOf<CategoryEntity?>(null) }
 
     Scaffold(
         topBar = {
@@ -89,7 +95,10 @@ fun SubjectDetailScreen(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(vertical = 6.dp)
-                            .clickable { onCategoryClick(row.category.id) },
+                            .combinedClickable(
+                                onClick = { onCategoryClick(row.category.id) },
+                                onLongClick = { categoryToEdit = row.category },
+                            ),
                     ) {
                         Row(
                             modifier = Modifier.fillMaxWidth().padding(16.dp),
@@ -140,6 +149,67 @@ fun SubjectDetailScreen(
             },
             dismissButton = {
                 TextButton(onClick = { showCreateDialog = false }) { Text("Cancel") }
+            },
+        )
+    }
+
+    categoryToEdit?.let { category ->
+        var name by remember(category.id) { mutableStateOf(category.name) }
+        AlertDialog(
+            onDismissRequest = { categoryToEdit = null },
+            title = { Text("Edit category") },
+            text = {
+                OutlinedTextField(
+                    value = name,
+                    onValueChange = { name = it },
+                    label = { Text("Name") },
+                    singleLine = true,
+                )
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        onRenameCategory(category, name.trim())
+                        categoryToEdit = null
+                    },
+                    enabled = name.isNotBlank(),
+                ) { Text("Save") }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = {
+                        categoryToDelete = category
+                        categoryToEdit = null
+                    },
+                ) {
+                    Text("Delete", color = MaterialTheme.colorScheme.error)
+                }
+                TextButton(onClick = { categoryToEdit = null }) { Text("Cancel") }
+            },
+        )
+    }
+
+    categoryToDelete?.let { category ->
+        AlertDialog(
+            onDismissRequest = { categoryToDelete = null },
+            title = { Text("Delete category?") },
+            text = {
+                Text(
+                    "\"${category.name}\" and all of its cards will be permanently deleted.",
+                )
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        onDeleteCategory(category)
+                        categoryToDelete = null
+                    },
+                ) {
+                    Text("Delete", color = MaterialTheme.colorScheme.error)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { categoryToDelete = null }) { Text("Cancel") }
             },
         )
     }

@@ -114,6 +114,12 @@ Ambiguous spec details resolved with the simplest reasonable choice.
   longer shown automatically; an "In detail" chip appears (only when the elaboration is
   non-blank) and expands the text on tap. Applies identically in cram and type-answer
   modes. The expanded state resets per card. Mnemonic display is unchanged.
+- **Subject/category editing**: long-press on a subject card (Home) or category row
+  (Subject detail) opens an edit dialog — the simplest affordance that keeps the list items
+  clean (no per-item overflow icons). The subject dialog offers rename plus a color picker
+  over the same `SUBJECT_COLORS` palette used at creation; the category dialog offers rename.
+  Both dialogs include a Delete action that first shows a confirmation dialog spelling out
+  that contained categories/cards are permanently deleted (Room CASCADE FKs do the deletion).
 - **CSV explanation column**: the CSV import format gains an optional third column
   (`question;answer;explanation`) mapped to the card's existing `elaboration` field; a
   blank third column means no elaboration. Two-column files keep working unchanged.
