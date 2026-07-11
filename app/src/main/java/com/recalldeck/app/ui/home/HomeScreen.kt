@@ -22,7 +22,9 @@ import androidx.compose.material.icons.filled.FileDownload
 import androidx.compose.material.icons.filled.LocalFireDepartment
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
@@ -84,36 +86,55 @@ fun HomeScreen(
         },
     ) { padding ->
         Column(modifier = Modifier.padding(padding).fillMaxSize()) {
-            Row(
-                modifier = Modifier.fillMaxWidth().padding(16.dp),
-                verticalAlignment = Alignment.CenterVertically,
+            Card(
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 8.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.primaryContainer,
+                    contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                ),
             ) {
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        "${state.dueCount} cards due",
-                        style = MaterialTheme.typography.titleLarge,
-                    )
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(
-                            Icons.Default.LocalFireDepartment,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.tertiary,
-                            modifier = Modifier.size(18.dp),
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(20.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            "${state.dueCount}",
+                            style = MaterialTheme.typography.displaySmall,
                         )
                         Text(
-                            "${state.streak}-day streak",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            "cards due",
+                            style = MaterialTheme.typography.bodyLarge,
                         )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                Icons.Default.LocalFireDepartment,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.tertiary,
+                                modifier = Modifier.size(18.dp),
+                            )
+                            Text(
+                                "${state.streak}-day streak",
+                                style = MaterialTheme.typography.bodyMedium,
+                            )
+                        }
                     }
-                }
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Button(onClick = onStudyAllDue, enabled = state.dueCount > 0) {
-                        Text("Study all due")
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Button(
+                            onClick = onStudyAllDue,
+                            enabled = state.dueCount > 0,
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.primary,
+                            ),
+                        ) {
+                            Text("Study all due")
+                        }
+                        TextButton(onClick = onCustomStudy) { Text("Custom study") }
                     }
-                    TextButton(onClick = onCustomStudy) { Text("Custom study") }
                 }
             }
+            Spacer(modifier = Modifier.height(8.dp))
 
             if (state.subjects.isEmpty() && !state.loading) {
                 EmptyState(

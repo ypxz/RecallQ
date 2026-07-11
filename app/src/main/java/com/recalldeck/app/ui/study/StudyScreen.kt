@@ -1,5 +1,8 @@
 package com.recalldeck.app.ui.study
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -20,12 +23,16 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -143,65 +150,12 @@ private fun CardStudyContent(
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            Text(
-                state.question,
-                style = MaterialTheme.typography.headlineSmall,
-                textAlign = TextAlign.Center,
-            )
-            if (state.hint != null && !state.revealed) {
-                Spacer(Modifier.height(16.dp))
-                if (state.hintRevealed) {
-                    Text(
-                        "Hint: ${state.hint}",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        textAlign = TextAlign.Center,
-                    )
-                } else {
-                    AssistChip(onClick = onRevealHint, label = { Text("Show hint") })
-                }
-            }
-            if (state.revealed) {
-                Spacer(Modifier.height(24.dp))
-                state.verdict?.let { verdict ->
-                    Text(
-                        when (verdict) {
-                            TypeAnswer.Verdict.CORRECT -> "Correct!"
-                            TypeAnswer.Verdict.ALMOST -> "Almost — check the answer"
-                            TypeAnswer.Verdict.WRONG -> "Not quite"
-                        },
-                        style = MaterialTheme.typography.titleMedium,
-                        color = when (verdict) {
-                            TypeAnswer.Verdict.CORRECT -> MaterialTheme.colorScheme.primary
-                            TypeAnswer.Verdict.ALMOST -> MaterialTheme.colorScheme.tertiary
-                            TypeAnswer.Verdict.WRONG -> MaterialTheme.colorScheme.error
-                        },
-                    )
-                    Spacer(Modifier.height(8.dp))
-                }
-                Text(
-                    state.answer,
-                    style = MaterialTheme.typography.headlineMedium,
-                    color = MaterialTheme.colorScheme.primary,
-                    textAlign = TextAlign.Center,
-                )
-                if (state.mnemonic != null) {
-                    Spacer(Modifier.height(16.dp))
-                    Text(
-                        "Mnemonic: ${state.mnemonic}",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        textAlign = TextAlign.Center,
-                    )
-                }
-                if (state.elaboration != null) {
-                    Spacer(Modifier.height(8.dp))
-                    Text(
-                        state.elaboration,
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        textAlign = TextAlign.Center,
-                    )
+            ElevatedCard(modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp)) {
+                Column(
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 32.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                ) {
+                    QuestionAnswerContent(state, onRevealHint)
                 }
             }
         }
@@ -229,6 +183,78 @@ private fun CardStudyContent(
 }
 
 @Composable
+private fun QuestionAnswerContent(state: StudyUiState, onRevealHint: () -> Unit) {
+    Text(
+        state.question,
+        style = MaterialTheme.typography.headlineSmall,
+        textAlign = TextAlign.Center,
+    )
+    if (state.hint != null && !state.revealed) {
+        Spacer(Modifier.height(16.dp))
+        if (state.hintRevealed) {
+            Text(
+                "Hint: ${state.hint}",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                textAlign = TextAlign.Center,
+            )
+        } else {
+            AssistChip(onClick = onRevealHint, label = { Text("Show hint") })
+        }
+    }
+    AnimatedVisibility(
+        visible = state.revealed,
+        enter = fadeIn() + expandVertically(),
+    ) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Spacer(Modifier.height(20.dp))
+            HorizontalDivider(modifier = Modifier.fillMaxWidth(0.4f))
+            Spacer(Modifier.height(20.dp))
+            state.verdict?.let { verdict ->
+                Text(
+                    when (verdict) {
+                        TypeAnswer.Verdict.CORRECT -> "Correct!"
+                        TypeAnswer.Verdict.ALMOST -> "Almost — check the answer"
+                        TypeAnswer.Verdict.WRONG -> "Not quite"
+                    },
+                    style = MaterialTheme.typography.titleMedium,
+                    color = when (verdict) {
+                        TypeAnswer.Verdict.CORRECT -> MaterialTheme.colorScheme.primary
+                        TypeAnswer.Verdict.ALMOST -> MaterialTheme.colorScheme.tertiary
+                        TypeAnswer.Verdict.WRONG -> MaterialTheme.colorScheme.error
+                    },
+                )
+                Spacer(Modifier.height(8.dp))
+            }
+            Text(
+                state.answer,
+                style = MaterialTheme.typography.headlineMedium,
+                color = MaterialTheme.colorScheme.primary,
+                textAlign = TextAlign.Center,
+            )
+            if (state.mnemonic != null) {
+                Spacer(Modifier.height(16.dp))
+                Text(
+                    "Mnemonic: ${state.mnemonic}",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    textAlign = TextAlign.Center,
+                )
+            }
+            if (state.elaboration != null) {
+                Spacer(Modifier.height(8.dp))
+                Text(
+                    state.elaboration,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    textAlign = TextAlign.Center,
+                )
+            }
+        }
+    }
+}
+
+@Composable
 private fun GradeButtons(captions: Map<Grade, String>, onGrade: (Grade) -> Unit) {
     Row(
         modifier = Modifier.fillMaxWidth(),
@@ -249,21 +275,25 @@ private fun GradeButton(
     modifier: Modifier = Modifier,
     error: Boolean = false,
 ) {
-    OutlinedButton(
+    FilledTonalButton(
         onClick = onClick,
         modifier = modifier,
-        contentPadding = PaddingValues(horizontal = 4.dp, vertical = 8.dp),
+        contentPadding = PaddingValues(horizontal = 4.dp, vertical = 10.dp),
+        colors = if (error) {
+            ButtonDefaults.filledTonalButtonColors(
+                containerColor = MaterialTheme.colorScheme.errorContainer,
+                contentColor = MaterialTheme.colorScheme.onErrorContainer,
+            )
+        } else {
+            ButtonDefaults.filledTonalButtonColors()
+        },
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Text(
-                label,
-                style = MaterialTheme.typography.labelLarge,
-                color = if (error) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary,
-            )
+            Text(label, style = MaterialTheme.typography.labelLarge)
             Text(
                 caption ?: "",
                 style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                color = LocalContentColor.current.copy(alpha = 0.7f),
             )
         }
     }

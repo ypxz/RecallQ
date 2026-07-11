@@ -1,11 +1,17 @@
 package com.recalldeck.app.ui.theme
 
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Shapes
+import androidx.compose.material3.Typography
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 
 private val LightColors = lightColorScheme(
     primary = Color(0xFF4355B9),
@@ -47,6 +53,25 @@ private val DarkColors = darkColorScheme(
     error = Color(0xFFFFB4AB),
 )
 
+private val AppShapes = Shapes(
+    extraSmall = RoundedCornerShape(6.dp),
+    small = RoundedCornerShape(10.dp),
+    medium = RoundedCornerShape(16.dp),
+    large = RoundedCornerShape(20.dp),
+    extraLarge = RoundedCornerShape(28.dp),
+)
+
+private val AppTypography = Typography().let { base ->
+    base.copy(
+        displaySmall = base.displaySmall.copy(fontWeight = FontWeight.SemiBold),
+        headlineSmall = base.headlineSmall.copy(fontWeight = FontWeight.SemiBold, lineHeight = 32.sp),
+        headlineMedium = base.headlineMedium.copy(fontWeight = FontWeight.SemiBold),
+        titleLarge = base.titleLarge.copy(fontWeight = FontWeight.SemiBold),
+        titleMedium = base.titleMedium.copy(fontWeight = FontWeight.SemiBold),
+        labelLarge = base.labelLarge.copy(letterSpacing = 0.2.sp),
+    )
+}
+
 @Composable
 fun RecallDeckTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
@@ -54,6 +79,8 @@ fun RecallDeckTheme(
 ) {
     MaterialTheme(
         colorScheme = if (darkTheme) DarkColors else LightColors,
+        typography = AppTypography,
+        shapes = AppShapes,
         content = content,
     )
 }
