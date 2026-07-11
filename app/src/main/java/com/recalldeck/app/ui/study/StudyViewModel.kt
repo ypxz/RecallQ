@@ -55,6 +55,8 @@ data class StudyUiState(
     val isCloze: Boolean = false,
     val revealed: Boolean = false,
     val hintRevealed: Boolean = false,
+    /** Whether the optional detailed explanation is expanded below the answer. */
+    val elaborationRevealed: Boolean = false,
     /** Grade button captions, e.g. AGAIN -> "3 min". */
     val intervalCaptions: Map<Grade, String> = emptyMap(),
     val currentCardId: Long? = null,
@@ -105,6 +107,8 @@ class StudyViewModel(
     fun reveal() = _uiState.update { it.copy(revealed = true) }
 
     fun revealHint() = _uiState.update { it.copy(hintRevealed = true) }
+
+    fun revealElaboration() = _uiState.update { it.copy(elaborationRevealed = true) }
 
     fun setTypedInput(value: String) = _uiState.update { it.copy(typedInput = value) }
 
@@ -209,6 +213,7 @@ class StudyViewModel(
                 currentCardId = card.id,
                 revealed = false,
                 hintRevealed = false,
+                elaborationRevealed = false,
                 intervalCaptions = previews.mapValues { (_, v) -> v.caption },
                 position = session.position,
                 total = session.queue.size,

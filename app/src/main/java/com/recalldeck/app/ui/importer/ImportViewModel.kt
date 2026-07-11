@@ -146,10 +146,18 @@ class ImportViewModel(
         )
     }
 
-    fun editCard(index: Int, question: String, answer: String) = _uiState.update {
+    fun editCard(index: Int, question: String, answer: String, elaboration: String) = _uiState.update {
         it.copy(
             cards = it.cards.mapIndexed { i, card ->
-                if (i == index) card.copy(question = question, answer = answer) else card
+                if (i == index) {
+                    card.copy(
+                        question = question,
+                        answer = answer,
+                        elaboration = elaboration.trim().ifEmpty { null },
+                    )
+                } else {
+                    card
+                }
             },
         )
     }
@@ -169,6 +177,7 @@ class ImportViewModel(
                         type = CardType.BASIC,
                         question = parsed.question,
                         answer = parsed.answer,
+                        elaboration = parsed.elaboration,
                         dueAt = time,
                         createdAt = time,
                         updatedAt = time,

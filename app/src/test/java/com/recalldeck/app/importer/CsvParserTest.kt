@@ -1,6 +1,7 @@
 package com.recalldeck.app.importer
 
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
@@ -45,6 +46,56 @@ class CsvParserTest {
         val text = "question one;answer one;extra;more"
         val success = CsvParser.parse(text) as ImportResult.Success
         assertEquals("answer one", success.cards[0].answer)
+    }
+
+    // --- optional third explanation column ---
+
+    @Test
+    fun thirdColumn_becomesElaboration() {
+        val text = "question;answer;explanation\nq1;a1;why it is so\nq2;a2\n"
+        val success = CsvParser.parse(text) as ImportResult.Success
+        assertEquals(2, success.cards.size)
+        assertEquals("why it is so", success.cards[0].elaboration)
+        assertNull(success.cards[1].elaboration)
+    }
+
+    @Test
+    fun twoColumnFiles_haveNullElaboration() {
+        val text = "question;answer\nq1;a1\nq2;a2\n"
+        val success = CsvParser.parse(text) as ImportResult.Success
+        assertEquals(2, success.cards.size)
+        assertTrue(success.cards.all { it.elaboration == null })
+        assertEquals("q1", success.cards[0].question)
+        assertEquals("a1", success.cards[0].answer)
+    }
+
+    @Test
+    fun blankThirdColumn_isNullElaboration() {
+        val text = "q1;a1;\nq2;a2;   \n"
+        val success = CsvParser.parse(text) as ImportResult.Success
+        assertTrue(success.cards.all { it.elaboration == null })
+    }
+
+    @Test
+    fun quotedThirdColumn_keepsSemicolonsAndQuotes() {
+        val text = "q1;a1;\"details; with \"\"quotes\"\" inside\"\n"
+        val success = CsvParser.parse(text) as ImportResult.Success
+        assertEquals("details; with \"quotes\" inside", success.cards[0].elaboration)
+    }
+
+    @Test
+    fun threeColumnHeader_isSkipped() {
+        val text = "question;answer;explanation\nq1;a1;e1\n"
+        val success = CsvParser.parse(text) as ImportResult.Success
+        assertEquals(1, success.cards.size)
+        assertEquals("e1", success.cards[0].elaboration)
+    }
+
+    @Test
+    fun garbageThirdColumn_neverCrashes() {
+        val binary = ByteArray(64) { (it * 41 % 256).toByte() }.toString(Charsets.ISO_8859_1)
+        val result = CsvParser.parse("q1;a1;$binary\n")
+        assertTrue(result is ImportResult.Failure || result is ImportResult.Success)
     }
 
     @Test

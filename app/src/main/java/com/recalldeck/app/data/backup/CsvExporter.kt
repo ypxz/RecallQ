@@ -4,8 +4,9 @@ import com.recalldeck.app.data.db.CardDao
 import com.recalldeck.app.data.db.CardEntity
 
 /**
- * Exports the cards of a single subject as CSV with `question;answer` rows,
- * matching the import preset of the same format.
+ * Exports the cards of a single subject as CSV with `question;answer;explanation`
+ * rows, matching the import preset of the same format. The explanation column
+ * carries the card's elaboration and is empty when the card has none.
  */
 class CsvExporter(private val cardDao: CardDao) {
 
@@ -14,11 +15,13 @@ class CsvExporter(private val cardDao: CardDao) {
 
     fun toCsv(cards: List<CardEntity>): String =
         buildString {
-            append("question;answer\n")
+            append("question;answer;explanation\n")
             for (card in cards) {
                 append(escape(card.question))
                 append(';')
                 append(escape(card.answer))
+                append(';')
+                append(escape(card.elaboration.orEmpty()))
                 append('\n')
             }
         }
