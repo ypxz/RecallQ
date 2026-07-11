@@ -169,6 +169,14 @@ interface ReviewLogDao {
     @Query("SELECT * FROM review_logs ORDER BY reviewedAt")
     suspend fun getAll(): List<ReviewLogEntity>
 
+    @Query(
+        """SELECT cardId, rating FROM (
+               SELECT cardId, rating, MAX(reviewedAt) FROM review_logs
+               WHERE countedTowardSchedule = 1 GROUP BY cardId
+           )""",
+    )
+    fun observeLastRatings(): Flow<List<CardLastRating>>
+
     @Insert
     suspend fun insertAll(logs: List<ReviewLogEntity>): List<Long>
 

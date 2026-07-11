@@ -2,10 +2,14 @@ package com.recalldeck.app.ui.browser
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.recalldeck.app.data.db.CardBucket
 import com.recalldeck.app.data.db.CardEntity
 import com.recalldeck.app.data.db.CardState
 import com.recalldeck.app.data.db.CategoryEntity
+import com.recalldeck.app.data.repo.AppSettings
 import com.recalldeck.app.data.repo.DeckRepository
+import com.recalldeck.app.data.repo.SettingsRepository
+import com.recalldeck.app.data.repo.StudyRepository
 import com.recalldeck.app.ui.common.containerViewModelFactory
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -16,21 +20,25 @@ import kotlinx.coroutines.launch
 
 data class CardBrowserUiState(
     val cards: List<CardEntity> = emptyList(),
+    val buckets: Map<Long, CardBucket> = emptyMap(),
     val query: String = "",
-    val stateFilter: CardState? = null,
+    val bucketFilter: CardBucket? = null,
     val selectedIds: Set<Long> = emptySet(),
     val categories: List<CategoryEntity> = emptyList(),
+    val settings: AppSettings = AppSettings(),
     val loading: Boolean = true,
 )
 
 class CardBrowserViewModel(
     private val repo: DeckRepository,
+    studyRepo: StudyRepository,
+    settingsRepo: SettingsRepository,
     subjectId: Long?,
     categoryId: Long?,
 ) : ViewModel() {
 
     private val query = MutableStateFlow("")
-    private val stateFilter = MutableStateFlow<CardState?>(null)
+    private val bucketFilter = MutableStateFlow<CardBucket?>(null)
     private val selectedIds = MutableStateFlow<Set<Long>>(emptySet())
 
     private val source = when {
@@ -39,14 +47,30 @@ class CardBrowserViewModel(
         else -> repo.observeAllCards()
     }
 
-    val uiState: StateFlow<CardBrowserUiState> = combine(
+    private data class CardsWithContext(
+        val cards: List<CardEntity>,
+        val buckets: Map<Long, CardBucket>,
+        val settings: AppSettings,
+    )
+
+    private val cardsWithContext = combine(
         source,
+        studyRepo.observeLastRatings(),
+        settingsRepo.settings,
+    ) { cards, lastRatings, settings ->
+        val ratingByCard = lastRatings.associate { it.cardId to it.rating }
+        val buckets = cards.associate { it.id to CardBucket.of(it.state, ratingByCard[it.id]) }
+        CardsWithContext(cards, buckets, settings)
+    }
+
+    val uiState: StateFlow<CardBrowserUiState> = combine(
+        cardsWithContext,
         query,
-        stateFilter,
+        bucketFilter,
         selectedIds,
-    ) { cards, q, filter, selected ->
-        val filtered = cards.filter { card ->
-            (filter == null || card.state == filter) &&
+    ) { ctx, q, filter, selected ->
+        val filtered = ctx.cards.filter { card ->
+            (filter == null || ctx.buckets[card.id] == filter) &&
                 (
                     q.isBlank() ||
                         card.question.contains(q, ignoreCase = true) ||
@@ -55,10 +79,12 @@ class CardBrowserViewModel(
         }
         CardBrowserUiState(
             cards = filtered,
+            buckets = ctx.buckets,
             query = q,
-            stateFilter = filter,
+            bucketFilter = filter,
             selectedIds = selected intersect filtered.map { it.id }.toSet(),
             categories = repo.getAllCategories(),
+            settings = ctx.settings,
             loading = false,
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), CardBrowserUiState())
@@ -67,8 +93,8 @@ class CardBrowserViewModel(
         query.value = value
     }
 
-    fun setStateFilter(value: CardState?) {
-        stateFilter.value = value
+    fun setBucketFilter(value: CardBucket?) {
+        bucketFilter.value = value
     }
 
     fun toggleSelection(id: Long) {
@@ -106,7 +132,13 @@ class CardBrowserViewModel(
 
     companion object {
         fun factory(subjectId: Long?, categoryId: Long?) = containerViewModelFactory {
-            CardBrowserViewModel(it.deckRepository, subjectId, categoryId)
+            CardBrowserViewModel(
+                it.deckRepository,
+                it.studyRepository,
+                it.settingsRepository,
+                subjectId,
+                categoryId,
+            )
         }
     }
 }

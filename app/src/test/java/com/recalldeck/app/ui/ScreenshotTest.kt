@@ -4,6 +4,7 @@ import app.cash.paparazzi.DeviceConfig
 import app.cash.paparazzi.Paparazzi
 import com.recalldeck.app.data.db.CardEntity
 import com.recalldeck.app.data.db.CardState
+import com.recalldeck.app.data.db.CardBucket
 import com.recalldeck.app.data.db.CardType
 import com.recalldeck.app.data.db.CategoryEntity
 import com.recalldeck.app.data.db.SubjectEntity
@@ -163,12 +164,17 @@ class ScreenshotTest {
                             card(2, "Define osmosis", "Diffusion of water across a membrane", CardState.NEW),
                             card(3, "What does DNA stand for?", "Deoxyribonucleic acid", CardState.SUSPENDED),
                         ),
+                        buckets = mapOf(
+                            1L to CardBucket.EASY,
+                            2L to CardBucket.NOT_STUDIED,
+                            3L to CardBucket.NEVER_ASK,
+                        ),
                         selectedIds = setOf(2L),
                         loading = false,
                     ),
                     onBack = {},
                     onQueryChange = {},
-                    onStateFilterChange = {},
+                    onBucketFilterChange = {},
                     onToggleSelection = {},
                     onClearSelection = {},
                     onDeleteSelected = {},
@@ -521,19 +527,20 @@ class ScreenshotTest {
                 SubjectBreakdown(
                     subjectId = 1,
                     subjectName = "Biology",
-                    stateCounts = mapOf(
-                        CardState.NEW to 10,
-                        CardState.LEARNING to 4,
-                        CardState.REVIEW to 28,
-                        CardState.SUSPENDED to 2,
+                    bucketCounts = mapOf(
+                        CardBucket.NOT_STUDIED to 10,
+                        CardBucket.EASY to 12,
+                        CardBucket.MEDIUM to 16,
+                        CardBucket.HARD to 4,
+                        CardBucket.NEVER_ASK to 2,
                     ),
                 ),
                 SubjectBreakdown(
                     subjectId = 2,
                     subjectName = "Organic Chemistry",
-                    stateCounts = mapOf(
-                        CardState.NEW to 20,
-                        CardState.REVIEW to 6,
+                    bucketCounts = mapOf(
+                        CardBucket.NOT_STUDIED to 20,
+                        CardBucket.MEDIUM to 6,
                     ),
                 ),
             ),
@@ -573,19 +580,20 @@ class ScreenshotTest {
                                 SubjectBreakdown(
                                     subjectId = 1,
                                     subjectName = "Biology",
-                                    stateCounts = mapOf(
-                                        CardState.NEW to 10,
-                                        CardState.LEARNING to 4,
-                                        CardState.REVIEW to 28,
-                                        CardState.SUSPENDED to 2,
+                                    bucketCounts = mapOf(
+                                        CardBucket.NOT_STUDIED to 10,
+                                        CardBucket.EASY to 12,
+                                        CardBucket.MEDIUM to 16,
+                                        CardBucket.HARD to 4,
+                                        CardBucket.NEVER_ASK to 2,
                                     ),
                                 ),
                                 SubjectBreakdown(
                                     subjectId = 2,
                                     subjectName = "Organic Chemistry",
-                                    stateCounts = mapOf(
-                                        CardState.NEW to 20,
-                                        CardState.REVIEW to 6,
+                                    bucketCounts = mapOf(
+                                        CardBucket.NOT_STUDIED to 20,
+                                        CardBucket.MEDIUM to 6,
                                     ),
                                 ),
                             ),

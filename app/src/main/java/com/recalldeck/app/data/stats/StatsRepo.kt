@@ -32,7 +32,7 @@ class StatsRepo(
             heatmap = StatsCalculator.heatmap(logs, today, zone),
             forecast = StatsCalculator.dueForecast(cards, today, zone),
             retentionPercent = StatsCalculator.retentionPercent(logs, now),
-            subjectBreakdown = StatsCalculator.subjectBreakdown(subjects, categories, cards),
+            subjectBreakdown = StatsCalculator.subjectBreakdown(subjects, categories, cards, logs),
         )
     }
 }

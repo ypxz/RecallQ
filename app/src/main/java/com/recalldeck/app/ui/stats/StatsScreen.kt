@@ -29,13 +29,12 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import com.recalldeck.app.data.db.CardState
+import com.recalldeck.app.data.db.CardBucket
 import com.recalldeck.app.data.stats.ForecastDay
 import com.recalldeck.app.data.stats.HeatmapDay
 import com.recalldeck.app.data.stats.StatsSnapshot
 import com.recalldeck.app.data.stats.SubjectBreakdown
 import com.recalldeck.app.ui.common.EmptyState
-import com.recalldeck.app.ui.common.displayLabel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -220,11 +219,11 @@ private fun SubjectBreakdownList(breakdown: List<SubjectBreakdown>) {
                     )
                 }
                 Spacer(Modifier.height(4.dp))
-                StateBar(subject.stateCounts)
+                BucketBar(subject.bucketCounts)
                 Spacer(Modifier.height(2.dp))
                 Text(
-                    CardState.entries.joinToString(" · ") { state ->
-                        "${subject.stateCounts[state] ?: 0} ${state.displayLabel().lowercase()}"
+                    CardBucket.entries.joinToString(" · ") { bucket ->
+                        "${subject.bucketCounts[bucket] ?: 0} ${bucket.displayLabel.lowercase()}"
                     },
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -235,27 +234,28 @@ private fun SubjectBreakdownList(breakdown: List<SubjectBreakdown>) {
 }
 
 @Composable
-private fun StateBar(stateCounts: Map<CardState, Int>) {
-    val total = stateCounts.values.sum().coerceAtLeast(1)
+private fun BucketBar(bucketCounts: Map<CardBucket, Int>) {
+    val total = bucketCounts.values.sum().coerceAtLeast(1)
     val colors = mapOf(
-        CardState.NEW to MaterialTheme.colorScheme.tertiary,
-        CardState.LEARNING to MaterialTheme.colorScheme.secondary,
-        CardState.REVIEW to MaterialTheme.colorScheme.primary,
-        CardState.SUSPENDED to MaterialTheme.colorScheme.surfaceVariant,
+        CardBucket.NOT_STUDIED to MaterialTheme.colorScheme.surfaceVariant,
+        CardBucket.EASY to MaterialTheme.colorScheme.primary,
+        CardBucket.MEDIUM to MaterialTheme.colorScheme.secondary,
+        CardBucket.HARD to MaterialTheme.colorScheme.tertiary,
+        CardBucket.VERY_HARD to MaterialTheme.colorScheme.error,
+        CardBucket.NEVER_ASK to MaterialTheme.colorScheme.outlineVariant,
     )
     Canvas(modifier = Modifier.fillMaxWidth().height(8.dp)) {
         var x = 0f
-        listOf(CardState.NEW, CardState.LEARNING, CardState.REVIEW, CardState.SUSPENDED)
-            .forEach { state ->
-                val count = stateCounts[state] ?: 0
-                if (count == 0) return@forEach
-                val width = size.width * (count.toFloat() / total)
-                drawRect(
-                    color = colors.getValue(state),
-                    topLeft = Offset(x, 0f),
-                    size = Size(width, size.height),
-                )
-                x += width
-            }
+        CardBucket.entries.forEach { bucket ->
+            val count = bucketCounts[bucket] ?: 0
+            if (count == 0) return@forEach
+            val width = size.width * (count.toFloat() / total)
+            drawRect(
+                color = colors.getValue(bucket),
+                topLeft = Offset(x, 0f),
+                size = Size(width, size.height),
+            )
+            x += width
+        }
     }
 }

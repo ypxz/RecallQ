@@ -40,11 +40,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.recalldeck.app.data.db.CardBucket
 import com.recalldeck.app.data.db.CardEntity
-import com.recalldeck.app.data.db.CardState
 import com.recalldeck.app.data.db.CategoryEntity
+import com.recalldeck.app.data.repo.AppSettings
 import com.recalldeck.app.ui.common.EmptyState
-import com.recalldeck.app.ui.common.displayLabel
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
@@ -52,7 +52,7 @@ fun CardBrowserScreen(
     state: CardBrowserUiState,
     onBack: () -> Unit,
     onQueryChange: (String) -> Unit,
-    onStateFilterChange: (CardState?) -> Unit,
+    onBucketFilterChange: (CardBucket?) -> Unit,
     onToggleSelection: (Long) -> Unit,
     onClearSelection: () -> Unit,
     onDeleteSelected: () -> Unit,
@@ -116,20 +116,26 @@ fun CardBrowserScreen(
                     .padding(horizontal = 16.dp, vertical = 8.dp),
             ) {
                 FilterChip(
-                    selected = state.stateFilter == null,
-                    onClick = { onStateFilterChange(null) },
+                    selected = state.bucketFilter == null,
+                    onClick = { onBucketFilterChange(null) },
                     label = { Text("All") },
                     modifier = Modifier.padding(end = 8.dp),
                 )
-                CardState.entries.forEach { cardState ->
+                CardBucket.entries.forEach { bucket ->
                     FilterChip(
-                        selected = state.stateFilter == cardState,
-                        onClick = { onStateFilterChange(cardState) },
-                        label = { Text(cardState.displayLabel()) },
+                        selected = state.bucketFilter == bucket,
+                        onClick = { onBucketFilterChange(bucket) },
+                        label = { Text(bucket.displayLabel) },
                         modifier = Modifier.padding(end = 8.dp),
                     )
                 }
             }
+            Text(
+                bucketIntervalCaption(state.settings),
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(horizontal = 16.dp),
+            )
             if (state.cards.isEmpty() && !state.loading) {
                 EmptyState(
                     title = "No cards found",
@@ -140,6 +146,7 @@ fun CardBrowserScreen(
                     items(state.cards, key = { it.id }) { card ->
                         CardRow(
                             card = card,
+                            bucket = state.buckets[card.id] ?: CardBucket.NOT_STUDIED,
                             selected = card.id in state.selectedIds,
                             selectionMode = selectionMode,
                             onClick = {
@@ -196,10 +203,22 @@ fun CardBrowserScreen(
     }
 }
 
+/** One-line summary of when cards return per bucket, from the learning-step settings. */
+fun bucketIntervalCaption(settings: AppSettings): String {
+    val hard = if (settings.newHardDelayMinutes == settings.learningHardDelayMinutes) {
+        "${settings.newHardDelayMinutes} min"
+    } else {
+        "${settings.newHardDelayMinutes}–${settings.learningHardDelayMinutes} min"
+    }
+    return "Returns: Very hard ~${settings.againDelayMinutes} min · Hard ~$hard · " +
+        "Medium & Easy after days (adaptive)"
+}
+
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun CardRow(
     card: CardEntity,
+    bucket: CardBucket,
     selected: Boolean,
     selectionMode: Boolean,
     onClick: () -> Unit,
@@ -234,7 +253,7 @@ private fun CardRow(
             }
             Column(modifier = Modifier.width(90.dp)) {
                 Text(
-                    card.state.name,
+                    bucket.displayLabel,
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.primary,
                 )

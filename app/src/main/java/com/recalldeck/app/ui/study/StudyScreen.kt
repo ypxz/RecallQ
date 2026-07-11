@@ -284,10 +284,10 @@ private fun GradeButtons(captions: Map<Grade, String>, onGrade: (Grade) -> Unit)
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        GradeButton("Know 100%", captions[Grade.EASY], { onGrade(Grade.EASY) }, Modifier.weight(1f))
-        GradeButton("Know it", captions[Grade.GOOD], { onGrade(Grade.GOOD) }, Modifier.weight(1f))
-        GradeButton("Kind of", captions[Grade.HARD], { onGrade(Grade.HARD) }, Modifier.weight(1f))
-        GradeButton("Don't know", captions[Grade.AGAIN], { onGrade(Grade.AGAIN) }, Modifier.weight(1f), error = true)
+        GradeButton("Easy", captions[Grade.EASY], { onGrade(Grade.EASY) }, Modifier.weight(1f))
+        GradeButton("Medium", captions[Grade.GOOD], { onGrade(Grade.GOOD) }, Modifier.weight(1f))
+        GradeButton("Hard", captions[Grade.HARD], { onGrade(Grade.HARD) }, Modifier.weight(1f))
+        GradeButton("Very hard", captions[Grade.AGAIN], { onGrade(Grade.AGAIN) }, Modifier.weight(1f), error = true)
     }
 }
 
@@ -338,10 +338,10 @@ private fun SessionSummary(summary: StudySummary, modifier: Modifier = Modifier)
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
         Spacer(Modifier.height(24.dp))
-        SummaryRow("Know 100%", summary.easy)
-        SummaryRow("Know it", summary.good)
-        SummaryRow("Kind of", summary.hard)
-        SummaryRow("Don't know", summary.again)
+        SummaryRow("Easy", summary.easy)
+        SummaryRow("Medium", summary.good)
+        SummaryRow("Hard", summary.hard)
+        SummaryRow("Very hard", summary.again)
     }
 }
 
